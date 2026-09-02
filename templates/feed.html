@@ -21,12 +21,14 @@
         <span>{{ .Instruction.OperandCount }}</span>
       </div>
       <details class="description">
-        <summary><span class="description-short">{{ .Instruction.Description }}</span></summary>
-        <p>{{ .Instruction.Description }}</p>
+        <summary>{{ .Instruction.Description }}</summary>
       </details>
       <div class="feed-actions">
         <a class="button button-primary" href="/?id={{ .NextInstructionID }}">Следующий</a>
-        <div class="like" aria-label="Количество отметок нравится">♡ <span>{{ .Instruction.LikeCount }}</span></div>
+        <div class="like" aria-label="Количество отметок нравится">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+          <span>{{ .Instruction.LikeCount }}</span>
+        </div>
       </div>
     </section>
     {{ template "navigation" . }}

@@ -37,11 +37,11 @@ func TestLabOnePages(t *testing.T) {
 		contains   []string
 		excludes   []string
 	}{
-		{name: "лента с корневого адреса", url: "/", statusCode: http.StatusOK, contains: []string{"<title>ADD · RISC-V</title>"}},
+		{name: "лента с корневого адреса", url: "/", statusCode: http.StatusOK, contains: []string{"<title>ADD · RISC-V</title>", "class=\"like\"", "<svg"}, excludes: []string{"♡"}},
 		{name: "лента по идентификатору", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>"}},
 		{name: "ссылка на следующую команду из коллекции", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>", "href=\"/?id=9\""}},
-		{name: "черновик", url: "/instruction/draft", statusCode: http.StatusOK, contains: []string{"value=\"ADD\""}},
-		{name: "серверная фильтрация плитки", url: "/instructions?min_operands=2&max_operands=2", statusCode: http.StatusOK, contains: []string{"<h2>LUI</h2>", "<h2>JAL</h2>", ">Показать</button>"}, excludes: []string{"<h2>SUB</h2>"}},
+		{name: "черновик", url: "/instruction/draft", statusCode: http.StatusOK, contains: []string{"value=\"ADD\""}, excludes: []string{"breadcrumbs"}},
+		{name: "серверная фильтрация плитки", url: "/instructions?min_operands=2&max_operands=2", statusCode: http.StatusOK, contains: []string{"<h2>LUI</h2>", "<h2>JAL</h2>", ">Показать</button>", "operand-range-dot-2 active"}, excludes: []string{"<h2>SUB</h2>", "breadcrumbs", "operand-range-dot-0 active", "operand-range-dot-1 active", "operand-range-dot-3 active"}},
 		{name: "некорректный идентификатор", url: "/?id=abc", statusCode: http.StatusBadRequest},
 		{name: "удалённая команда", url: "/?id=77", statusCode: http.StatusNotFound},
 	}

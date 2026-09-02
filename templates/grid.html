@@ -10,7 +10,6 @@
 <body>
   <main class="phone plain-page">
     <section class="grid-content">
-      <nav class="breadcrumbs" aria-label="Навигационная цепочка"><span>Команды</span></nav>
       <h1>Команды</h1>
       <form class="operand-filter" method="get" action="/instructions">
         <label>Количество операндов</label>
@@ -20,10 +19,10 @@
               <input class="range-input" aria-label="Минимальное количество операндов" name="min_operands" type="range" min="0" max="3" value="{{ .MinimumOperandCount }}">
               <input class="range-input" aria-label="Максимальное количество операндов" name="max_operands" type="range" min="0" max="3" value="{{ .MaximumOperandCount }}">
               <span class="operand-range-track"></span>
-              <span class="operand-range-dot operand-range-dot-0"></span>
-              <span class="operand-range-dot operand-range-dot-1"></span>
-              <span class="operand-range-dot operand-range-dot-2"></span>
-              <span class="operand-range-dot operand-range-dot-3"></span>
+              <span class="operand-range-dot operand-range-dot-0{{ if eq .MinimumOperandCount 0 }} active{{ end }}"></span>
+              <span class="operand-range-dot operand-range-dot-1{{ if and (le .MinimumOperandCount 1) (ge .MaximumOperandCount 1) }} active{{ end }}"></span>
+              <span class="operand-range-dot operand-range-dot-2{{ if and (le .MinimumOperandCount 2) (ge .MaximumOperandCount 2) }} active{{ end }}"></span>
+              <span class="operand-range-dot operand-range-dot-3{{ if eq .MaximumOperandCount 3 }} active{{ end }}"></span>
             </div>
             <div class="range-labels"><span>0</span><span>1</span><span>2</span><span>3</span></div>
           </div>
