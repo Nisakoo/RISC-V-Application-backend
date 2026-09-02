@@ -15,9 +15,9 @@
     <div class="feed-shade"></div>
     <section class="feed-content">
       <p class="eyebrow"><span class="status-dot"></span>{{ .Instruction.Mnemonic }}</p>
-      <div class="feed-title">
-        <h1>{{ .Instruction.Mnemonic }}</h1>
-        <code>{{ .Instruction.Format }} · {{ .Instruction.OperandCount }} операнда</code>
+      <div class="feed-properties">
+        <span>{{ .Instruction.Format }}</span>
+        <span>{{ .Instruction.OperandCount }}</span>
       </div>
       <details class="description">
         <summary><span class="description-short">{{ .Instruction.Description }}</span></summary>
