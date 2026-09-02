@@ -19,7 +19,7 @@ func NewInstructionRepository() *InstructionRepository {
 		{
 			ID:           1,
 			Mnemonic:     "ADD",
-			Description:  "Складывает значения двух регистров и сохраняет результат в целевой регистр.",
+			Description:  "Складывает значения исходных регистров rs1 и rs2, затем сохраняет сумму в целевой регистр rd. Команда не обращается к памяти и применяется для базовых арифметических вычислений над целыми числами.",
 			Format:       "R",
 			OperandCount: 3,
 			ImageURL:     mediaBaseURL + "/images/ADD.png",
@@ -30,7 +30,7 @@ func NewInstructionRepository() *InstructionRepository {
 		{
 			ID:           4,
 			Mnemonic:     "SUB",
-			Description:  "Вычитает значение второго регистра из первого и записывает разность.",
+			Description:  "Вычитает значение исходного регистра rs2 из значения регистра rs1 и записывает полученную разность в rd. Результат вычисляется в пределах разрядности регистра текущей архитектуры RISC-V.",
 			Format:       "R",
 			OperandCount: 3,
 			ImageURL:     mediaBaseURL + "/images/SUB.png",
@@ -41,7 +41,7 @@ func NewInstructionRepository() *InstructionRepository {
 		{
 			ID:           9,
 			Mnemonic:     "ADDI",
-			Description:  "Складывает значение регистра с непосредственным значением.",
+			Description:  "Складывает значение регистра rs1 со знаково расширенным непосредственным значением immediate и сохраняет результат в rd. Команда удобна для изменения счётчиков, адресов и небольших целых значений.",
 			Format:       "I",
 			OperandCount: 3,
 			ImageURL:     mediaBaseURL + "/images/ADDI.png",
@@ -52,7 +52,7 @@ func NewInstructionRepository() *InstructionRepository {
 		{
 			ID:           15,
 			Mnemonic:     "BEQ",
-			Description:  "Переходит по метке, если значения двух регистров равны.",
+			Description:  "Сравнивает значения регистров rs1 и rs2. Если они равны, выполнение продолжается по адресу PC плюс заданное смещение; иначе процессор переходит к следующей последовательной команде.",
 			Format:       "B",
 			OperandCount: 3,
 			ImageURL:     mediaBaseURL + "/images/BEQ.png",
@@ -63,7 +63,7 @@ func NewInstructionRepository() *InstructionRepository {
 		{
 			ID:           23,
 			Mnemonic:     "LUI",
-			Description:  "Загружает 20 старших бит непосредственного значения в регистр.",
+			Description:  "Помещает двадцатибитное непосредственное значение в старшие разряды целевого регистра rd, заполняя младшие двенадцать разрядов нулями. Используется для формирования больших констант и адресов.",
 			Format:       "U",
 			OperandCount: 2,
 			ImageURL:     mediaBaseURL + "/images/LUI.png",
@@ -74,7 +74,7 @@ func NewInstructionRepository() *InstructionRepository {
 		{
 			ID:           42,
 			Mnemonic:     "JAL",
-			Description:  "Переходит по адресу и сохраняет адрес следующей команды в регистр.",
+			Description:  "Выполняет безусловный переход по адресу PC плюс знаковое смещение и сохраняет адрес следующей команды PC + 4 в регистре rd. Применяется для вызова функций и переходов с возможностью возврата.",
 			Format:       "J",
 			OperandCount: 2,
 			ImageURL:     mediaBaseURL + "/images/JAL.png",
@@ -85,7 +85,7 @@ func NewInstructionRepository() *InstructionRepository {
 		{
 			ID:           77,
 			Mnemonic:     "AND",
-			Description:  "Выполняет побитовое И над значениями двух регистров.",
+			Description:  "Выполняет побитовое логическое И над значениями исходных регистров rs1 и rs2, записывая результат в rd. Каждый бит результата равен единице только тогда, когда оба соответствующих входных бита равны единице.",
 			Format:       "R",
 			OperandCount: 3,
 			ImageURL:     mediaBaseURL + "/images/default.svg",

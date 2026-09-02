@@ -37,7 +37,7 @@ func TestLabOnePages(t *testing.T) {
 		contains   []string
 		excludes   []string
 	}{
-		{name: "лента с корневого адреса", url: "/", statusCode: http.StatusOK, contains: []string{"<title>ADD · RISC-V</title>", "class=\"like\"", "<svg"}, excludes: []string{"♡"}},
+		{name: "лента с корневого адреса", url: "/", statusCode: http.StatusOK, contains: []string{"<title>ADD · RISC-V</title>", "class=\"description-toggle\">ещё", "class=\"description-toggle\">меньше", "class=\"like\"", "<svg"}, excludes: []string{"♡"}},
 		{name: "лента по идентификатору", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>"}},
 		{name: "ссылка на следующую команду из коллекции", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>", "href=\"/?id=9\""}},
 		{name: "черновик", url: "/instruction/draft", statusCode: http.StatusOK, contains: []string{"value=\"ADD\""}, excludes: []string{"breadcrumbs"}},

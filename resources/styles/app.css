@@ -82,11 +82,14 @@ button, input, textarea { font: inherit; }
 .feed-properties { display: flex; gap: 8px; margin-top: auto; }
 .feed-properties span { min-width: 44px; padding: 7px 12px; border-radius: 18px; background: var(--accent); color: #181818; font-weight: 800; text-align: center; }
 .description { margin: 18px 0 12px; color: #ececf1; font-size: 17px; line-height: 1.45; }
-.description summary { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; cursor: pointer; list-style: none; }
+.description summary { cursor: pointer; list-style: none; }
 .description summary::-webkit-details-marker { display: none; }
-.description summary::after { content: " ещё"; color: var(--accent); }
-.description[open] summary { display: block; overflow: visible; }
-.description[open] summary::after { content: " меньше"; }
+.description-collapsed { display: flex; align-items: flex-end; }
+.description-collapsed-text { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.description-toggle { flex: none; margin-left: 5px; color: var(--accent); }
+.description-expanded { display: none; }
+.description[open] .description-collapsed { display: none; }
+.description[open] .description-expanded { display: inline; }
 .feed-actions { display: flex; align-items: center; gap: 16px; }
 .button { border: 0; border-radius: 28px; cursor: pointer; font-weight: 800; text-align: center; text-decoration: none; transition: filter .2s ease; }
 .button-primary { display: block; width: 100%; padding: 16px; background: var(--accent); color: #181818; }
