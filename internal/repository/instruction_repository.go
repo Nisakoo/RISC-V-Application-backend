@@ -116,13 +116,13 @@ func (repository *InstructionRepository) GetDraft() (domain.Instruction, error) 
 	return domain.Instruction{}, ErrInstructionNotFound
 }
 
-func (repository *InstructionRepository) GetVisible(operandCount *int) []domain.Instruction {
+func (repository *InstructionRepository) GetVisible(minimumOperandCount int, maximumOperandCount int) []domain.Instruction {
 	visible := make([]domain.Instruction, 0, len(repository.instructions))
 	for _, instruction := range repository.instructions {
 		if instruction.Status == domain.InstructionDeleted {
 			continue
 		}
-		if operandCount != nil && instruction.OperandCount != *operandCount {
+		if instruction.OperandCount < minimumOperandCount || instruction.OperandCount > maximumOperandCount {
 			continue
 		}
 		visible = append(visible, instruction)
@@ -132,7 +132,7 @@ func (repository *InstructionRepository) GetVisible(operandCount *int) []domain.
 }
 
 func (repository *InstructionRepository) GetNextVisible(id int) (domain.Instruction, error) {
-	visible := repository.GetVisible(nil)
+	visible := repository.GetVisible(0, 3)
 	for index, instruction := range visible {
 		if instruction.ID == id {
 			return visible[(index+1)%len(visible)], nil

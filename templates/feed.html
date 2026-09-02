@@ -25,7 +25,7 @@
         <p>{{ .Instruction.Description }}</p>
       </details>
       <div class="feed-actions">
-        <a class="button button-primary" href="/?id={{ .Instruction.ID }}&amp;next=true">Следующий</a>
+        <a class="button button-primary" href="/?id={{ .NextInstructionID }}">Следующий</a>
         <div class="like" aria-label="Количество отметок нравится">♡ <span>{{ .Instruction.LikeCount }}</span></div>
       </div>
     </section>

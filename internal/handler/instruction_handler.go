@@ -35,7 +35,7 @@ func (handler *InstructionHandler) Feed(context *gin.Context) {
 	var err error
 
 	if idParameter == "" {
-		visibleInstructions := handler.repository.GetVisible(nil)
+		visibleInstructions := handler.repository.GetVisible(0, 3)
 		if len(visibleInstructions) == 0 {
 			context.String(http.StatusNotFound, "Нет доступных команд")
 			return
@@ -54,9 +54,6 @@ func (handler *InstructionHandler) Feed(context *gin.Context) {
 			return
 		}
 
-		if context.Query("next") == "true" {
-			instruction, err = handler.repository.GetNextVisible(id)
-		}
 	}
 
 	if err != nil {
@@ -64,9 +61,16 @@ func (handler *InstructionHandler) Feed(context *gin.Context) {
 		return
 	}
 
+	nextInstruction, err := handler.repository.GetNextVisible(instruction.ID)
+	if err != nil {
+		context.String(http.StatusNotFound, "Следующая команда не найдена")
+		return
+	}
+
 	context.HTML(http.StatusOK, "feed.html", gin.H{
-		"Instruction": toInstructionView(instruction),
-		"ActivePage":  "feed",
+		"Instruction":       toInstructionView(instruction),
+		"NextInstructionID": nextInstruction.ID,
+		"ActivePage":        "feed",
 	})
 }
 
@@ -84,26 +88,34 @@ func (handler *InstructionHandler) Draft(context *gin.Context) {
 }
 
 func (handler *InstructionHandler) Grid(context *gin.Context) {
-	var operandCount *int
-	operandFilter := context.Query("operands")
-	if operandFilter != "" {
-		parsedOperandCount, err := strconv.Atoi(operandFilter)
-		if err == nil && parsedOperandCount >= 0 && parsedOperandCount <= 3 {
-			operandCount = &parsedOperandCount
-		}
+	minimumOperandCount := operandCountParameter(context, "min_operands", 0)
+	maximumOperandCount := operandCountParameter(context, "max_operands", 3)
+	if minimumOperandCount > maximumOperandCount {
+		minimumOperandCount, maximumOperandCount = maximumOperandCount, minimumOperandCount
 	}
 
-	instructions := handler.repository.GetVisible(operandCount)
+	instructions := handler.repository.GetVisible(minimumOperandCount, maximumOperandCount)
 	views := make([]instructionView, 0, len(instructions))
 	for _, instruction := range instructions {
 		views = append(views, toInstructionView(instruction))
 	}
 
 	context.HTML(http.StatusOK, "grid.html", gin.H{
-		"Instructions":  views,
-		"OperandFilter": operandFilter,
-		"ActivePage":    "grid",
+		"Instructions":        views,
+		"MinimumOperandCount": minimumOperandCount,
+		"MaximumOperandCount": maximumOperandCount,
+		"RangeStart":          minimumOperandCount * 100 / 3,
+		"RangeEnd":            maximumOperandCount * 100 / 3,
+		"ActivePage":          "grid",
 	})
+}
+
+func operandCountParameter(context *gin.Context, name string, fallback int) int {
+	value, err := strconv.Atoi(context.Query(name))
+	if err != nil || value < 0 || value > 3 {
+		return fallback
+	}
+	return value
 }
 
 func toInstructionView(instruction domain.Instruction) instructionView {
