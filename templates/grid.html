@@ -18,7 +18,7 @@
       <div class="instruction-grid">
         {{ range .Instructions }}
         <article class="instruction-card" data-video-url="{{ .VideoURL }}">
-          <a href="/feed/{{ .ID }}"><img src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}"></a>
+          <a href="/?id={{ .ID }}"><img src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}"></a>
           <div class="card-body"><h2>{{ .Mnemonic }}</h2><div class="card-meta"><span>{{ .Format }} · {{ .OperandCount }}</span><span class="card-like">♡ {{ .LikeCount }}</span></div></div>
         </article>
         {{ else }}

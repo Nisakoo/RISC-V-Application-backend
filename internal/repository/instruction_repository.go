@@ -28,7 +28,7 @@ func NewInstructionRepository() *InstructionRepository {
 			LikedUserIDs: userIDs(128, 0),
 		},
 		{
-			ID:           2,
+			ID:           4,
 			Mnemonic:     "SUB",
 			Description:  "Вычитает значение второго регистра из первого и записывает разность.",
 			Format:       "R",
@@ -39,7 +39,7 @@ func NewInstructionRepository() *InstructionRepository {
 			LikedUserIDs: userIDs(94, 200),
 		},
 		{
-			ID:           3,
+			ID:           9,
 			Mnemonic:     "ADDI",
 			Description:  "Складывает значение регистра с непосредственным значением.",
 			Format:       "I",
@@ -50,7 +50,7 @@ func NewInstructionRepository() *InstructionRepository {
 			LikedUserIDs: userIDs(76, 400),
 		},
 		{
-			ID:           4,
+			ID:           15,
 			Mnemonic:     "BEQ",
 			Description:  "Переходит по метке, если значения двух регистров равны.",
 			Format:       "B",
@@ -61,7 +61,7 @@ func NewInstructionRepository() *InstructionRepository {
 			LikedUserIDs: userIDs(63, 600),
 		},
 		{
-			ID:           5,
+			ID:           23,
 			Mnemonic:     "LUI",
 			Description:  "Загружает 20 старших бит непосредственного значения в регистр.",
 			Format:       "U",
@@ -72,15 +72,26 @@ func NewInstructionRepository() *InstructionRepository {
 			LikedUserIDs: userIDs(51, 800),
 		},
 		{
-			ID:           6,
+			ID:           42,
 			Mnemonic:     "JAL",
 			Description:  "Переходит по адресу и сохраняет адрес следующей команды в регистр.",
 			Format:       "J",
 			OperandCount: 2,
 			ImageURL:     mediaBaseURL + "/images/JAL.png",
 			VideoURL:     mediaBaseURL + "/video/JAL.mp4",
-			Status:       domain.InstructionDeleted,
+			Status:       domain.InstructionPublished,
 			LikedUserIDs: userIDs(43, 1000),
+		},
+		{
+			ID:           77,
+			Mnemonic:     "AND",
+			Description:  "Выполняет побитовое И над значениями двух регистров.",
+			Format:       "R",
+			OperandCount: 3,
+			ImageURL:     mediaBaseURL + "/images/default.svg",
+			VideoURL:     mediaBaseURL + "/video/ADD.mp4",
+			Status:       domain.InstructionDeleted,
+			LikedUserIDs: userIDs(12, 1200),
 		},
 	}}
 }
