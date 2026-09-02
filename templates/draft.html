@@ -1,0 +1,32 @@
+{{ define "draft.html" }}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Добавление команды · RISC-V</title>
+  <link rel="stylesheet" href="/static/styles/app.css">
+</head>
+<body>
+  <main class="phone plain-page">
+    <section class="draft-content">
+      <h1>Добавление инструкции</h1>
+      <p class="muted">Заполните поля, чтобы добавить инструкцию</p>
+      <form class="draft-form">
+        <div class="media-row">
+          <label class="media-field"><video class="media-preview" muted poster="{{ .Instruction.ImageURL }}"><source src="{{ .Instruction.VideoURL }}" type="video/mp4"></video><b>Видео</b><small>MP4, MOV · до 500 МБ</small><input type="file" accept="video/mp4,video/quicktime"></label>
+          <label class="media-field"><img class="media-preview" src="{{ .Instruction.ImageURL }}" alt="Схема команды {{ .Instruction.Mnemonic }}"><b>Изображение</b><small>PNG, JPG · до 20 МБ</small><input type="file" accept="image/png,image/jpeg"></label>
+        </div>
+        <label>Инструкция<input value="{{ .Instruction.Mnemonic }}"></label>
+        <label>Описание<textarea rows="3">{{ .Instruction.Description }}</textarea></label>
+        <label>Тип инструкции<input value="{{ .Instruction.Format }}"></label>
+        <label>Количество операндов<input type="number" min="0" max="3" value="{{ .Instruction.OperandCount }}"></label>
+        <button class="button button-primary" type="button">Добавить в ленту</button>
+      </form>
+      <p class="lab-note">В первой лабораторной данные не сохраняются.</p>
+    </section>
+    {{ template "navigation" . }}
+  </main>
+</body>
+</html>
+{{ end }}
