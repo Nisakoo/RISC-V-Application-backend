@@ -19,8 +19,7 @@ func NewServer() *Server {
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "resources")
 
-	router.GET("/feed", handler.Feed)
-	router.GET("/feed/:id", handler.Feed)
+	router.GET("/", handler.Feed)
 	router.GET("/instruction/draft", handler.Draft)
 	router.GET("/instructions", handler.Grid)
 

@@ -30,7 +30,7 @@ func NewInstructionHandler(repository *repository.InstructionRepository) *Instru
 }
 
 func (handler *InstructionHandler) Feed(context *gin.Context) {
-	idParameter := context.Param("id")
+	idParameter := context.Query("id")
 	var instruction domain.Instruction
 	var err error
 
