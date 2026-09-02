@@ -13,5 +13,23 @@ services:
     volumes:
       - minio-data:/data
 
+  minio-setup:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    volumes:
+      - ../../assets:/assets:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do sleep 1; done
+        mc mb --ignore-existing local/riscv-assets
+        mc anonymous set download local/riscv-assets
+        mc mirror --overwrite --exclude "*.DS_Store" /assets local/riscv-assets
+        mc rm --force local/riscv-assets/.DS_Store >/dev/null 2>&1 || true
+
 volumes:
   minio-data:
