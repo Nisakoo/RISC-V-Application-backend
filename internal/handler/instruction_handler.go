@@ -115,6 +115,6 @@ func toInstructionView(instruction domain.Instruction) instructionView {
 		OperandCount: instruction.OperandCount,
 		ImageURL:     instruction.ImageURL,
 		VideoURL:     instruction.VideoURL,
-		LikeCount:    instruction.LikeCount(),
+		LikeCount:    len(instruction.LikedUserIDs),
 	}
 }

@@ -29,11 +29,12 @@ The server listens on `http://localhost:8080`. Images and videos are read from t
 
 ## Local infrastructure
 
-MinIO is defined in [`docker/compose.yaml`](docker/compose.yaml). Create `docker/.env` from `docker/.env.example`, set non-default credentials, then run:
+MinIO is defined in [`docker/compose.yaml`](docker/compose.yaml). Create `docker/.env` from `docker/.env.example`, set non-default credentials, then run from the workspace root:
 
 ```sh
-cd docker
-docker compose up -d
+make infra-up
 ```
+
+The setup container creates the public `riscv-assets` bucket and copies all images and videos from the root `assets` directory into it.
 
 MinIO API: `http://localhost:9000`; console: `http://localhost:9001`.

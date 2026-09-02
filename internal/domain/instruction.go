@@ -20,7 +20,3 @@ type Instruction struct {
 	Status       InstructionStatus
 	LikedUserIDs []int
 }
-
-func (instruction Instruction) LikeCount() int {
-	return len(instruction.LikedUserIDs)
-}
