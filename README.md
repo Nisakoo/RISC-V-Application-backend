@@ -2,6 +2,22 @@
 
 Go REST API for the RISC-V instruction catalogue and program execution requests.
 
+## Lab 1
+
+The first lab is a server-rendered interface without JavaScript. It uses one in-memory collection of RISC-V instructions and three GET controllers:
+
+- `/feed` and `/feed/:id` — instruction feed; `?next=true` opens the next visible instruction;
+- `/instruction/draft` — the single draft instruction;
+- `/instructions?operands=3` — instruction grid with server-side filtering by operand count.
+
+Run it from this directory:
+
+```sh
+go run ./cmd/api
+```
+
+The server listens on `http://localhost:8080`. Images and videos are read from the public local MinIO bucket `riscv-assets`.
+
 ## Structure
 
 - `cmd/api` — application entry point;

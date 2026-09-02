@@ -1,0 +1,33 @@
+{{ define "grid.html" }}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Команды · RISC-V</title>
+  <link rel="stylesheet" href="/static/styles/app.css">
+</head>
+<body>
+  <main class="phone plain-page">
+    <section class="grid-content">
+      <h1>Команды</h1>
+      <form class="filter" method="get" action="/instructions">
+        <label for="operands">Количество операндов</label>
+        <div class="filter-row"><input id="operands" name="operands" type="range" min="0" max="3" value="{{ if .OperandFilter }}{{ .OperandFilter }}{{ else }}3{{ end }}"><button type="submit">Показать</button></div>
+      </form>
+      <div class="instruction-grid">
+        {{ range .Instructions }}
+        <article class="instruction-card" data-video-url="{{ .VideoURL }}">
+          <a href="/feed/{{ .ID }}"><img src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}"></a>
+          <div class="card-body"><h2>{{ .Mnemonic }}</h2><div class="card-meta"><span>{{ .Format }} · {{ .OperandCount }}</span><span class="card-like">♡ {{ .LikeCount }}</span></div></div>
+        </article>
+        {{ else }}
+        <p class="empty-state">Команд с выбранным количеством операндов нет.</p>
+        {{ end }}
+      </div>
+    </section>
+    {{ template "navigation" . }}
+  </main>
+</body>
+</html>
+{{ end }}

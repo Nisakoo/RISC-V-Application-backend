@@ -1,0 +1,43 @@
+{{ define "feed.html" }}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Instruction.Mnemonic }} · RISC-V</title>
+  <link rel="stylesheet" href="/static/styles/app.css">
+</head>
+<body>
+  <main class="phone feed-page">
+    <video class="feed-video" autoplay muted loop playsinline poster="{{ .Instruction.ImageURL }}">
+      <source src="{{ .Instruction.VideoURL }}" type="video/mp4">
+    </video>
+    <div class="feed-shade"></div>
+    <section class="feed-content">
+      <p class="eyebrow"><span class="status-dot"></span>{{ .Instruction.Mnemonic }}</p>
+      <div class="feed-title">
+        <h1>{{ .Instruction.Mnemonic }}</h1>
+        <code>{{ .Instruction.Format }} · {{ .Instruction.OperandCount }} операнда</code>
+      </div>
+      <details class="description">
+        <summary><span class="description-short">{{ .Instruction.Description }}</span></summary>
+        <p>{{ .Instruction.Description }}</p>
+      </details>
+      <div class="feed-actions">
+        <a class="button button-primary" href="/feed/{{ .Instruction.ID }}?next=true">Следующий</a>
+        <div class="like" aria-label="Количество отметок нравится">♡ <span>{{ .Instruction.LikeCount }}</span></div>
+      </div>
+    </section>
+    {{ template "navigation" . }}
+  </main>
+</body>
+</html>
+{{ end }}
+
+{{ define "navigation" }}
+<nav class="bottom-nav" aria-label="Навигация">
+  <a class="{{ if eq .ActivePage "feed" }}active{{ end }}" href="/feed"><span>☰</span>Лента</a>
+  <a class="{{ if eq .ActivePage "draft" }}active{{ end }}" href="/instruction/draft"><span>＋</span>Добавить</a>
+  <a class="{{ if eq .ActivePage "grid" }}active{{ end }}" href="/instructions"><span>▦</span>Плитка</a>
+</nav>
+{{ end }}
