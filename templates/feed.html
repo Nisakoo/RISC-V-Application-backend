@@ -36,8 +36,8 @@
 
 {{ define "navigation" }}
 <nav class="bottom-nav" aria-label="Навигация">
-  <a class="{{ if eq .ActivePage "feed" }}active{{ end }}" href="/feed"><span>☰</span>Лента</a>
-  <a class="{{ if eq .ActivePage "draft" }}active{{ end }}" href="/instruction/draft"><span>＋</span>Добавить</a>
-  <a class="{{ if eq .ActivePage "grid" }}active{{ end }}" href="/instructions"><span>▦</span>Плитка</a>
+  <a class="{{ if eq .ActivePage "feed" }}active{{ end }}" href="/feed"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h14"/></svg></span>Лента</a>
+  <a class="{{ if eq .ActivePage "draft" }}active{{ end }}" href="/instruction/draft"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Добавить</a>
+  <a class="{{ if eq .ActivePage "grid" }}active{{ end }}" href="/instructions"><span class="nav-icon nav-icon-grid"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span>Плитка</a>
 </nav>
 {{ end }}
