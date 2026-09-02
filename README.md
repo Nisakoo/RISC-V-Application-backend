@@ -1,40 +1,40 @@
 # Backend
 
-Go REST API for the RISC-V instruction catalogue and program execution requests.
+Серверная часть на Go для каталога команд RISC-V и программ, составленных из экземпляров команд.
 
-## Lab 1
+## Лабораторная работа №1
 
-The first lab is a server-rendered interface without JavaScript. It uses one in-memory collection of RISC-V instructions and three GET controllers:
+В первой лабораторной используется серверная шаблонизация без JavaScript. Данные находятся в одной коллекции команд RISC-V в памяти. Реализованы три GET-контроллера:
 
-- `/feed` and `/feed/:id` — instruction feed; `?next=true` opens the next visible instruction;
-- `/instruction/draft` — the single draft instruction;
-- `/instructions?operands=3` — instruction grid with server-side filtering by operand count.
+- `/feed` и `/feed/:id` — лента команд; параметр `?next=true` открывает следующую доступную команду;
+- `/instruction/draft` — единственная команда в статусе черновика;
+- `/instructions?operands=3` — плитка команд с серверной фильтрацией по количеству операндов.
 
-Run it from this directory:
+Запуск из каталога `backend`:
 
 ```sh
 go run ./cmd/api
 ```
 
-The server listens on `http://localhost:8080`. Images and videos are read from the public local MinIO bucket `riscv-assets`.
+Сервер доступен по адресу `http://localhost:8080`. Изображения и видео загружаются из публичного локального бакета MinIO `riscv-assets`.
 
-## Structure
+## Структура
 
-- `cmd/api` — application entry point;
-- `internal/domain` — RISC-V domain models and DTOs;
-- `internal/handler` — HTTP handlers;
-- `internal/repository` — PostgreSQL and MinIO access;
-- `internal/app` — dependency wiring and server lifecycle;
-- `docker` — local infrastructure configuration.
+- `cmd/api` — точка входа приложения;
+- `internal/domain` — предметные модели и DTO RISC-V;
+- `internal/handler` — HTTP-обработчики;
+- `internal/repository` — коллекция команд и операции выборки;
+- `internal/app` — сборка зависимостей и запуск сервера;
+- `docker` — конфигурация локальной инфраструктуры.
 
-## Local infrastructure
+## Локальная инфраструктура
 
-MinIO is defined in [`docker/compose.yaml`](docker/compose.yaml). Create `docker/.env` from `docker/.env.example`, set non-default credentials, then run from the workspace root:
+MinIO описан в [`docker/compose.yaml`](docker/compose.yaml). Создайте `docker/.env` на основе `docker/.env.example`, задайте собственные учётные данные и выполните из корня рабочего каталога:
 
 ```sh
 make infra-up
 ```
 
-The setup container creates the public `riscv-assets` bucket and copies all images and videos from the root `assets` directory into it.
+Служебный контейнер создаёт публичный бакет `riscv-assets` и копирует в него изображения и видео из корневого каталога `assets`.
 
-MinIO API: `http://localhost:9000`; console: `http://localhost:9001`.
+API MinIO: `http://localhost:9000`; панель управления: `http://localhost:9001`.
