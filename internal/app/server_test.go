@@ -39,9 +39,9 @@ func TestLabOnePages(t *testing.T) {
 	}{
 		{name: "лента с корневого адреса", url: "/", statusCode: http.StatusOK, contains: []string{"<title>ADD · RISC-V</title>"}},
 		{name: "лента по идентификатору", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>"}},
-		{name: "следующая команда из коллекции", url: "/?id=4&next=true", statusCode: http.StatusOK, contains: []string{"<title>ADDI · RISC-V</title>"}},
+		{name: "ссылка на следующую команду из коллекции", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>", "href=\"/?id=9\""}},
 		{name: "черновик", url: "/instruction/draft", statusCode: http.StatusOK, contains: []string{"value=\"ADD\""}},
-		{name: "серверная фильтрация плитки", url: "/instructions?operands=2", statusCode: http.StatusOK, contains: []string{"<h2>LUI</h2>", "<h2>JAL</h2>"}, excludes: []string{"<h2>SUB</h2>"}},
+		{name: "серверная фильтрация плитки", url: "/instructions?min_operands=2&max_operands=2", statusCode: http.StatusOK, contains: []string{"<h2>LUI</h2>", "<h2>JAL</h2>", ">Показать</button>"}, excludes: []string{"<h2>SUB</h2>"}},
 		{name: "некорректный идентификатор", url: "/?id=abc", statusCode: http.StatusBadRequest},
 		{name: "удалённая команда", url: "/?id=77", statusCode: http.StatusNotFound},
 	}

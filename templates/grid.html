@@ -10,16 +10,31 @@
 <body>
   <main class="phone plain-page">
     <section class="grid-content">
+      <nav class="breadcrumbs" aria-label="Навигационная цепочка"><span>Команды</span></nav>
       <h1>Команды</h1>
-      <form class="filter" method="get" action="/instructions">
-        <label for="operands">Количество операндов</label>
-        <div class="filter-row"><input id="operands" name="operands" type="range" min="0" max="3" value="{{ if .OperandFilter }}{{ .OperandFilter }}{{ else }}3{{ end }}"><button type="submit">Показать</button></div>
+      <form class="operand-filter" method="get" action="/instructions">
+        <label>Количество операндов</label>
+        <div class="filter-controls">
+          <div class="range-control">
+            <div class="operand-range" style="--range-start: {{ .RangeStart }}%; --range-end: {{ .RangeEnd }}%;">
+              <input class="range-input" aria-label="Минимальное количество операндов" name="min_operands" type="range" min="0" max="3" value="{{ .MinimumOperandCount }}">
+              <input class="range-input" aria-label="Максимальное количество операндов" name="max_operands" type="range" min="0" max="3" value="{{ .MaximumOperandCount }}">
+              <span class="operand-range-track"></span>
+              <span class="operand-range-dot operand-range-dot-0"></span>
+              <span class="operand-range-dot operand-range-dot-1"></span>
+              <span class="operand-range-dot operand-range-dot-2"></span>
+              <span class="operand-range-dot operand-range-dot-3"></span>
+            </div>
+            <div class="range-labels"><span>0</span><span>1</span><span>2</span><span>3</span></div>
+          </div>
+          <button type="submit">Показать</button>
+        </div>
       </form>
       <div class="instruction-grid">
         {{ range .Instructions }}
         <article class="instruction-card" data-video-url="{{ .VideoURL }}">
           <a href="/?id={{ .ID }}"><img src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}"></a>
-          <div class="card-body"><h2>{{ .Mnemonic }}</h2><div class="card-meta"><span>{{ .Format }} · {{ .OperandCount }}</span><span class="card-like">♡ {{ .LikeCount }}</span></div></div>
+          <div class="card-body"><h2>{{ .Mnemonic }}</h2><div class="card-meta"><span class="instruction-badge">{{ .Format }} · {{ .OperandCount }}</span><span class="card-like">♡ {{ .LikeCount }}</span></div></div>
         </article>
         {{ else }}
         <p class="empty-state">Команд с выбранным количеством операндов нет.</p>

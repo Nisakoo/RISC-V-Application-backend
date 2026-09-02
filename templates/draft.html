@@ -10,20 +10,28 @@
 <body>
   <main class="phone plain-page">
     <section class="draft-content">
+      <nav class="breadcrumbs" aria-label="Навигационная цепочка"><a href="/instructions">Команды</a><span>/</span><span>Добавление</span></nav>
       <h1>Добавление инструкции</h1>
-      <p class="muted">Заполните поля, чтобы добавить инструкцию</p>
+      <p class="page-subtitle">Заполните поля, чтобы добавить инструкцию</p>
       <form class="draft-form">
         <div class="media-row">
-          <label class="media-field"><video class="media-preview" muted poster="{{ .Instruction.ImageURL }}"><source src="{{ .Instruction.VideoURL }}" type="video/mp4"></video><b>Видео</b><small>MP4, MOV · до 500 МБ</small><input type="file" accept="video/mp4,video/quicktime"></label>
-          <label class="media-field"><img class="media-preview" src="{{ .Instruction.ImageURL }}" alt="Схема команды {{ .Instruction.Mnemonic }}"><b>Изображение</b><small>PNG, JPG · до 20 МБ</small><input type="file" accept="image/png,image/jpeg"></label>
+          <label class="media-field" for="instruction-video">
+            <span class="media-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="m10 9 5 3-5 3Z"/></svg></span>
+            <strong>Видео</strong><small>MP4, MOV · до 500 МБ</small>
+          </label>
+          <input id="instruction-video" type="file" accept="video/mp4,video/quicktime" hidden>
+          <label class="media-field" for="instruction-image">
+            <span class="media-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="15.5" cy="9" r="1.5"/><path d="m6.5 17 4.5-5 3 3 2-2 2.5 4Z"/></svg></span>
+            <strong>Изображение</strong><small>PNG, JPG · до 20 МБ</small>
+          </label>
+          <input id="instruction-image" type="file" accept="image/png,image/jpeg" hidden>
         </div>
-        <label>Инструкция<input value="{{ .Instruction.Mnemonic }}"></label>
-        <label>Описание<textarea rows="3">{{ .Instruction.Description }}</textarea></label>
-        <label>Тип инструкции<input value="{{ .Instruction.Format }}"></label>
-        <label>Количество операндов<input type="number" min="0" max="3" value="{{ .Instruction.OperandCount }}"></label>
-        <button class="button button-primary" type="button">Добавить в ленту</button>
+        <label class="form-field"><span>Инструкция</span><input value="{{ .Instruction.Mnemonic }}"></label>
+        <label class="form-field"><span>Описание</span><textarea rows="3">{{ .Instruction.Description }}</textarea></label>
+        <label class="form-field"><span>Тип инструкции</span><input value="{{ .Instruction.Format }}"></label>
+        <label class="form-field"><span>Количество операндов</span><input type="number" min="0" max="3" value="{{ .Instruction.OperandCount }}"></label>
+        <button class="button button-primary add-action" type="button">Добавить в ленту</button>
       </form>
-      <p class="lab-note">В первой лабораторной данные не сохраняются.</p>
     </section>
     {{ template "navigation" . }}
   </main>
