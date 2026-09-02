@@ -21,7 +21,10 @@
         <span>{{ .Instruction.OperandCount }}</span>
       </div>
       <details class="description">
-        <summary>{{ .Instruction.Description }}</summary>
+        <summary>
+          <span class="description-collapsed"><span class="description-collapsed-text">{{ .Instruction.Description }}</span><span class="description-toggle">ещё</span></span>
+          <span class="description-expanded">{{ .Instruction.Description }} <span class="description-toggle">меньше</span></span>
+        </summary>
       </details>
       <div class="feed-actions">
         <a class="button button-primary" href="/?id={{ .NextInstructionID }}">Следующий</a>
