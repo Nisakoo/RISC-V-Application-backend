@@ -8,7 +8,7 @@ const (
 	InstructionDeleted   InstructionStatus = "deleted"
 )
 
-// Instruction is a RISC-V command from the in-memory collection used in lab 1.
+// Instruction — команда RISC-V из коллекции в памяти для первой лабораторной работы.
 type Instruction struct {
 	ID           int
 	Mnemonic     string
