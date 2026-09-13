@@ -5,7 +5,7 @@
 <body>
   <div class="phone">
     <main class="page-view plain-page">
-      <section class="page-content instructions-page">
+      <section class="page-content riscv-commands-page">
         <h1>Команды</h1>
         <form class="operand-filter" method="get" action="{{ .Layout.GridURL }}">
           <fieldset class="operand-filter__fields">
@@ -27,13 +27,18 @@
             </div>
           </fieldset>
         </form>
+        {{ if .ErrorMessage }}<p class="form-error" role="alert">{{ .ErrorMessage }}</p>{{ end }}
         <div class="instruction-grid">
-          {{ range .Instructions }}
+          {{ range .RiscVCommands }}
           <article class="instruction-card">
             <a href="{{ $.Layout.FeedURL }}?id={{ .ID }}"><img class="instruction-card__image" src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}" loading="lazy" decoding="async"></a>
             <div class="card-body">
               <h2 class="card-title">{{ .Mnemonic }}</h2>
               <div class="instruction-card__meta"><span class="badge">{{ .Format }} · {{ .OperandCount }} · {{ .LengthBits }} бит</span><span aria-label="{{ .LikeCount }} отметок нравится">♡ {{ .LikeCount }}</span></div>
+              <form method="post" action="{{ $.Layout.DeleteURL }}">
+                <input type="hidden" name="riscv_command_id" value="{{ .ID }}">
+                <button class="instruction-card__delete" type="submit">Удалить</button>
+              </form>
             </div>
           </article>
           {{ else }}

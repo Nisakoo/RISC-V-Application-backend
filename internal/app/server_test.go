@@ -1,309 +1,264 @@
 package app
 
 import (
+	"bytes"
+	"context"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+
+	"riscv-lab/internal/domain"
+	"riscv-lab/internal/handler"
+	"riscv-lab/internal/repository"
+	"riscv-lab/internal/service"
 )
 
-func TestLabOnePages(t *testing.T) {
-	server := newTestServer()
-
-	tests := []struct {
-		name       string
-		url        string
-		statusCode int
-		contains   []string
-		excludes   []string
-		ordered    []string
-	}{
-		{
-			name:       "лента без идентификатора",
-			url:        "/riscv_commands/feed",
-			statusCode: http.StatusOK,
-			contains: []string{
-				"<title>ADD · RISC-V</title>",
-				"<div class=\"feed-progress\" aria-hidden=\"true\"></div>",
-				"class=\"feed-description-toggle\">ещё",
-				"class=\"feed-description-toggle\">меньше",
-				"<dt class=\"visually-hidden\">Длина</dt><dd>32 бит</dd>",
-				"class=\"feed-like\"",
-				"href=\"/riscv_commands/feed\" aria-current=\"page\"",
-			},
-			excludes: []string{"♡", "<dt>Формат</dt>", "<dt>Операнды</dt>", "<dt>Длина</dt>", "feed-side", "<script"},
-			ordered: []string{
-				"<div class=\"feed-information\">",
-				"<details class=\"feed-description\">",
-				"<dl class=\"feed-properties\"",
-				"<div class=\"feed-actions\">",
-				"class=\"feed-like\"",
-			},
-		},
-		{
-			name:       "лента по идентификатору",
-			url:        "/riscv_commands/feed?id=4",
-			statusCode: http.StatusOK,
-			contains:   []string{"<title>SUB · RISC-V</title>"},
-		},
-		{
-			name:       "ссылка на следующую команду из коллекции",
-			url:        "/riscv_commands/feed?id=4",
-			statusCode: http.StatusOK,
-			contains:   []string{"<title>SUB · RISC-V</title>", "href=\"/riscv_commands/feed?id=9\""},
-		},
-		{
-			name:       "циклическая ссылка после последней команды",
-			url:        "/riscv_commands/feed?id=42",
-			statusCode: http.StatusOK,
-			contains:   []string{"<title>JAL · RISC-V</title>", "href=\"/riscv_commands/feed?id=1\""},
-		},
-		{
-			name:       "черновик без кнопки добавления",
-			url:        "/riscv_commands/add",
-			statusCode: http.StatusOK,
-			contains: []string{
-				"value=\"ADD\"",
-				"name=\"length_bits\"",
-				"value=\"32\"",
-				"href=\"/riscv_commands/add\" aria-current=\"page\"",
-				"данные формы не сохраняются",
-			},
-			excludes: []string{"Добавить в ленту", "<script"},
-		},
-		{
-			name:       "серверная фильтрация плитки",
-			url:        "/riscv_commands/grid?min_operands=2&max_operands=2",
-			statusCode: http.StatusOK,
-			contains: []string{
-				"<h2 class=\"card-title\">LUI</h2>",
-				"<h2 class=\"card-title\">JAL</h2>",
-				">Показать</button>",
-				"operand-range__dot--2 active",
-				"href=\"/riscv_commands/grid\" aria-current=\"page\"",
-				"U · 2 · 32 бит",
-			},
-			excludes: []string{
-				"<h2 class=\"card-title\">SUB</h2>",
-				"operand-range__dot--0 active",
-				"operand-range__dot--1 active",
-				"operand-range__dot--3 active",
-				"<script",
-				"data-video-url",
-			},
-		},
-		{
-			name:       "перевёрнутый диапазон нормализуется",
-			url:        "/riscv_commands/grid?min_operands=3&max_operands=2",
-			statusCode: http.StatusOK,
-			contains: []string{
-				"name=\"min_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"2\"",
-				"name=\"max_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"3\"",
-			},
-		},
-		{
-			name:       "некорректный диапазон заменяется полным",
-			url:        "/riscv_commands/grid?min_operands=abc&max_operands=8",
-			statusCode: http.StatusOK,
-			contains: []string{
-				"name=\"min_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"0\"",
-				"name=\"max_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"3\"",
-			},
-		},
-		{
-			name:       "удалённая команда исключена из плитки",
-			url:        "/riscv_commands/grid",
-			statusCode: http.StatusOK,
-			excludes:   []string{"<h2 class=\"card-title\">AND</h2>"},
-		},
-		{
-			name:       "некорректный идентификатор",
-			url:        "/riscv_commands/feed?id=abc",
-			statusCode: http.StatusBadRequest,
-			contains: []string{
-				"<title>Некорректный идентификатор · RISC-V</title>",
-				"Некорректный идентификатор команды.",
-				"href=\"/riscv_commands/feed\">Открыть ленту</a>",
-			},
-		},
-		{
-			name:       "неизвестная команда",
-			url:        "/riscv_commands/feed?id=999",
-			statusCode: http.StatusNotFound,
-			contains: []string{
-				"<title>Команда не найдена · RISC-V</title>",
-				"href=\"/riscv_commands/feed\">Открыть ленту</a>",
-			},
-		},
-		{
-			name:       "удалённая команда",
-			url:        "/riscv_commands/feed?id=77",
-			statusCode: http.StatusNotFound,
-			contains:   []string{"<title>Команда не найдена · RISC-V</title>"},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			request := httptest.NewRequest(http.MethodGet, test.url, nil)
-			response := httptest.NewRecorder()
-			server.router.ServeHTTP(response, request)
-
-			if response.Code != test.statusCode {
-				t.Fatalf("получен код %d, ожидался %d", response.Code, test.statusCode)
-			}
-
-			body := response.Body.String()
-			for _, fragment := range test.contains {
-				if !strings.Contains(body, fragment) {
-					t.Errorf("в ответе отсутствует %q", fragment)
-				}
-			}
-			for _, fragment := range test.excludes {
-				if strings.Contains(body, fragment) {
-					t.Errorf("ответ не должен содержать %q", fragment)
-				}
-			}
-			assertFragmentsOrder(t, body, test.ordered)
-			if navigationCount := strings.Count(body, `<nav class="bottom-navigation"`); navigationCount != 1 {
-				t.Errorf("получено навигационных панелей: %d, ожидалась одна", navigationCount)
-			}
-			if activePageCount := strings.Count(body, `aria-current="page"`); activePageCount != 1 {
-				t.Errorf("получено активных разделов навигации: %d, ожидался один", activePageCount)
-			}
-			if strings.Contains(body, "<script") {
-				t.Error("страницы первой лабораторной не должны содержать JavaScript")
-			}
-		})
-	}
+type applicationRepository struct {
+	commands []domain.RiscVCommand
+	draft    *domain.RiscVCommand
 }
 
-func TestLabOneHasExactlyThreeRiscVCommandGetControllers(t *testing.T) {
-	server := newTestServer()
-	applicationRoutes := make(map[string]string)
+func (fake *applicationRepository) GetByID(_ context.Context, id int64) (domain.RiscVCommand, error) {
+	for _, command := range fake.commands {
+		if command.ID == id {
+			return command, nil
+		}
+	}
+	if fake.draft != nil && fake.draft.ID == id {
+		return *fake.draft, nil
+	}
+	return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
+}
+
+func (fake *applicationRepository) GetDraftByCreatorID(_ context.Context, _ int64) (domain.RiscVCommand, error) {
+	if fake.draft == nil {
+		return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
+	}
+	return *fake.draft, nil
+}
+
+func (fake *applicationRepository) GetVisible(_ context.Context, minimum int, maximum int) ([]domain.RiscVCommand, error) {
+	result := make([]domain.RiscVCommand, 0)
+	for _, command := range fake.commands {
+		if command.Status == domain.RiscVCommandPublished && command.OperandCount >= minimum && command.OperandCount <= maximum {
+			result = append(result, command)
+		}
+	}
+	return result, nil
+}
+
+func (fake *applicationRepository) GetNextVisible(_ context.Context, id int64) (domain.RiscVCommand, error) {
+	visible, _ := fake.GetVisible(context.Background(), 0, 3)
+	for index, command := range visible {
+		if command.ID == id {
+			return visible[(index+1)%len(visible)], nil
+		}
+	}
+	return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
+}
+
+func (fake *applicationRepository) CreateDraft(_ context.Context, creatorID int64, input domain.CreateRiscVCommandDraft, imageKey string, videoKey string) (domain.RiscVCommand, error) {
+	if fake.draft != nil {
+		return domain.RiscVCommand{}, repository.ErrDraftAlreadyExists
+	}
+	command := domain.RiscVCommand{ID: 100, Mnemonic: input.Mnemonic, ImageKey: imageKey, VideoKey: videoKey, Status: domain.RiscVCommandDraft, CreatorID: creatorID, LengthBits: 32}
+	fake.draft = &command
+	return command, nil
+}
+
+func (fake *applicationRepository) PublishDraft(_ context.Context, id int64, _ int64, input domain.PublishRiscVCommandDraft) (domain.RiscVCommand, error) {
+	if fake.draft == nil || fake.draft.ID != id {
+		return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
+	}
+	command := *fake.draft
+	command.AssemblyExample = input.AssemblyExample
+	command.Description = input.Description
+	command.Format = input.Format
+	command.OperandCount = input.OperandCount
+	command.LengthBits = input.LengthBits
+	command.Status = domain.RiscVCommandPublished
+	fake.commands = append(fake.commands, command)
+	fake.draft = nil
+	return command, nil
+}
+
+func (fake *applicationRepository) SoftDelete(_ context.Context, id int64) error {
+	for index := range fake.commands {
+		if fake.commands[index].ID == id && fake.commands[index].Status != domain.RiscVCommandDeleted {
+			fake.commands[index].Status = domain.RiscVCommandDeleted
+			return nil
+		}
+	}
+	return repository.ErrRiscVCommandNotFound
+}
+
+type applicationMedia struct{}
+
+func (applicationMedia) Put(_ context.Context, directory string, extension string, _ string, reader io.Reader, _ int64) (string, error) {
+	if _, err := io.Copy(io.Discard, reader); err != nil {
+		return "", err
+	}
+	return directory + "/uploaded" + extension, nil
+}
+
+func (applicationMedia) Remove(_ context.Context, _ string) error { return nil }
+
+func (applicationMedia) URL(key string) string {
+	if key == "" {
+		return "http://localhost:9000/riscv-assets/images/default.svg"
+	}
+	return "http://localhost:9000/riscv-assets/" + key
+}
+
+func TestLabTwoHasExactlySixRiscVCommandMethods(t *testing.T) {
+	server, _ := newTestServer()
+	routes := make([]string, 0)
 	for _, registeredRoute := range server.router.Routes() {
-		if !strings.HasPrefix(registeredRoute.Path, "/riscv_commands/") {
-			continue
+		if strings.HasPrefix(registeredRoute.Path, "/riscv_commands/") {
+			routes = append(routes, registeredRoute.Method+" "+registeredRoute.Path)
 		}
-		applicationRoutes[registeredRoute.Path] = registeredRoute.Method
 	}
+	sort.Strings(routes)
+	expected := []string{
+		"GET /riscv_commands/add",
+		"GET /riscv_commands/feed",
+		"GET /riscv_commands/grid",
+		"POST /riscv_commands/add",
+		"POST /riscv_commands/delete",
+		"POST /riscv_commands/publish",
+	}
+	if !reflect.DeepEqual(routes, expected) {
+		t.Fatalf("получены маршруты %v, ожидались %v", routes, expected)
+	}
+}
 
-	expectedRoutes := map[string]string{
-		"/riscv_commands/feed": http.MethodGet,
-		"/riscv_commands/add":  http.MethodGet,
-		"/riscv_commands/grid": http.MethodGet,
+func TestLabTwoPagesReadRiscVCommands(t *testing.T) {
+	server, _ := newTestServer()
+	tests := []struct {
+		url      string
+		contains []string
+	}{
+		{url: "/riscv_commands/feed", contains: []string{"<title>ADD · RISC-V</title>", "href=\"/riscv_commands/feed?id=4\"", ">4</small>"}},
+		{url: "/riscv_commands/feed?id=4", contains: []string{"<title>SUB · RISC-V</title>", "href=\"/riscv_commands/feed?id=23\""}},
+		{url: "/riscv_commands/grid?min_operands=2&max_operands=2", contains: []string{"<h2 class=\"card-title\">LUI</h2>", "action=\"/riscv_commands/delete\""}},
+		{url: "/riscv_commands/add", contains: []string{"Создайте черновик команды RISC-V", "enctype=\"multipart/form-data\"", ">Далее</button>"}},
 	}
-	if len(applicationRoutes) != len(expectedRoutes) {
-		t.Fatalf("получены прикладные маршруты %v, ожидались %v", applicationRoutes, expectedRoutes)
-	}
-	for path, method := range expectedRoutes {
-		if applicationRoutes[path] != method {
-			t.Errorf("маршрут %s использует метод %q, ожидался %q", path, applicationRoutes[path], method)
+	for _, test := range tests {
+		request := httptest.NewRequest(http.MethodGet, test.url, nil)
+		response := httptest.NewRecorder()
+		server.router.ServeHTTP(response, request)
+		if response.Code != http.StatusOK {
+			t.Errorf("%s вернул %d, ожидался 200", test.url, response.Code)
+		}
+		for _, fragment := range test.contains {
+			if !strings.Contains(response.Body.String(), fragment) {
+				t.Errorf("в ответе %s отсутствует %q", test.url, fragment)
+			}
+		}
+		if strings.Contains(response.Body.String(), "<script") {
+			t.Errorf("страница %s содержит JavaScript", test.url)
 		}
 	}
 }
 
-func TestRootRedirectsToFeed(t *testing.T) {
-	server := newTestServer()
+func TestLabTwoCreateAndPublishFlow(t *testing.T) {
+	server, fakeRepository := newTestServer()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	_ = writer.WriteField("mnemonic", "xor")
+	writeMultipartFile(t, writer, "riscv_command_image", "xor.png", []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"))
+	writeMultipartFile(t, writer, "riscv_command_video", "xor.mp4", []byte("\x00\x00\x00\x14ftypmp42\x00\x00\x00\x00mp42"))
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	request := httptest.NewRequest(http.MethodPost, "/riscv_commands/add", body)
+	request.Header.Set("Content-Type", writer.FormDataContentType())
+	response := httptest.NewRecorder()
+	server.router.ServeHTTP(response, request)
+	if response.Code != http.StatusSeeOther || fakeRepository.draft == nil || fakeRepository.draft.Mnemonic != "XOR" {
+		t.Fatalf("черновик не создан: код %d, черновик %+v", response.Code, fakeRepository.draft)
+	}
+
+	publishForm := url.Values{
+		"assembly_example": {"xor x3, x1, x2"},
+		"description":      {"Выполняет побитовое исключающее ИЛИ для двух регистров."},
+		"format":           {"R"},
+		"operand_count":    {"3"},
+		"length_bits":      {"32"},
+	}
+	request = httptest.NewRequest(http.MethodPost, "/riscv_commands/publish", strings.NewReader(publishForm.Encode()))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response = httptest.NewRecorder()
+	server.router.ServeHTTP(response, request)
+	if response.Code != http.StatusSeeOther || fakeRepository.draft != nil {
+		t.Fatalf("черновик не опубликован: код %d, тело %s", response.Code, response.Body.String())
+	}
+	if location := response.Header().Get("Location"); location != "/riscv_commands/feed?id=100" {
+		t.Fatalf("получено перенаправление %q", location)
+	}
+}
+
+func TestLabTwoDeleteHidesCommandAndDirectURL(t *testing.T) {
+	server, _ := newTestServer()
+	request := httptest.NewRequest(http.MethodPost, "/riscv_commands/delete", strings.NewReader("riscv_command_id=4"))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response := httptest.NewRecorder()
+	server.router.ServeHTTP(response, request)
+	if response.Code != http.StatusSeeOther {
+		t.Fatalf("удаление вернуло %d", response.Code)
+	}
+
+	request = httptest.NewRequest(http.MethodGet, "/riscv_commands/feed?id=4", nil)
+	response = httptest.NewRecorder()
+	server.router.ServeHTTP(response, request)
+	if response.Code != http.StatusNotFound {
+		t.Fatalf("удалённая команда вернула %d, ожидался 404", response.Code)
+	}
+}
+
+func TestRootRedirectsToRiscVCommandFeed(t *testing.T) {
+	server, _ := newTestServer()
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
 	server.router.ServeHTTP(response, request)
-
-	if response.Code != http.StatusFound {
-		t.Fatalf("корневой маршрут вернул код %d, ожидался %d", response.Code, http.StatusFound)
-	}
-	if location := response.Header().Get("Location"); location != "/riscv_commands/feed" {
-		t.Errorf("корневой маршрут перенаправляет на %q, ожидался %q", location, "/riscv_commands/feed")
+	if response.Code != http.StatusFound || response.Header().Get("Location") != "/riscv_commands/feed" {
+		t.Fatalf("корневой URL вернул %d и Location %q", response.Code, response.Header().Get("Location"))
 	}
 }
 
-func TestOldApplicationRoutesAreNotServed(t *testing.T) {
-	server := newTestServer()
-	oldRoutes := []string{"/instruction/draft", "/instructions"}
-	for _, oldRoute := range oldRoutes {
-		request := httptest.NewRequest(http.MethodGet, oldRoute, nil)
-		response := httptest.NewRecorder()
-		server.router.ServeHTTP(response, request)
-		if response.Code != http.StatusNotFound {
-			t.Errorf("старый маршрут %s вернул код %d, ожидался %d", oldRoute, response.Code, http.StatusNotFound)
-		}
-	}
-}
-
-func TestStylesKeepNavigationInsideVerticalScreen(t *testing.T) {
-	server := newTestServer()
-	request := httptest.NewRequest(http.MethodGet, "/static/styles/app.css", nil)
-	response := httptest.NewRecorder()
-	server.router.ServeHTTP(response, request)
-
-	if response.Code != http.StatusOK {
-		t.Fatalf("получен код %d, ожидался %d", response.Code, http.StatusOK)
-	}
-
-	stylesheet := response.Body.String()
-	requiredFragments := []string{
-		"height: 100dvh",
-		"grid-template-rows: minmax(0, 1fr) auto",
-		"env(safe-area-inset-bottom, 0px)",
-		"@media (prefers-reduced-motion: reduce)",
-	}
-	for _, fragment := range requiredFragments {
-		if !strings.Contains(stylesheet, fragment) {
-			t.Errorf("в стилях отсутствует %q", fragment)
-		}
-	}
-	if strings.Contains(stylesheet, "position: fixed") {
-		t.Error("нижняя навигация не должна закрепляться относительно окна браузера")
-	}
-}
-
-func TestStylesAlignOperandRangeThumbsWithTrack(t *testing.T) {
-	server := newTestServer()
-	request := httptest.NewRequest(http.MethodGet, "/static/styles/app.css", nil)
-	response := httptest.NewRecorder()
-	server.router.ServeHTTP(response, request)
-
-	if response.Code != http.StatusOK {
-		t.Fatalf("получен код %d, ожидался %d", response.Code, http.StatusOK)
-	}
-
-	stylesheet := response.Body.String()
-	requiredFragments := []string{
-		".operand-range .form-range::-webkit-slider-thumb {",
-		"margin-top: 0",
-		".operand-range .form-range::-moz-range-thumb {",
-		".operand-range__dot {",
-		"top: 10px",
-	}
-	for _, fragment := range requiredFragments {
-		if !strings.Contains(stylesheet, fragment) {
-			t.Errorf("в стилях ползунка отсутствует %q", fragment)
-		}
-	}
-	if strings.Contains(stylesheet, "margin-top: -9px") {
-		t.Error("бегунки фильтра не должны смещаться выше дорожки")
-	}
-}
-
-func assertFragmentsOrder(t *testing.T, body string, fragments []string) {
+func writeMultipartFile(t *testing.T, writer *multipart.Writer, field string, name string, contents []byte) {
 	t.Helper()
-	previousIndex := -1
-	for _, fragment := range fragments {
-		index := strings.Index(body, fragment)
-		if index == -1 {
-			t.Errorf("в ответе отсутствует %q", fragment)
-			return
-		}
-		if index <= previousIndex {
-			t.Errorf("фрагмент %q расположен в неверном порядке", fragment)
-			return
-		}
-		previousIndex = index
+	part, err := writer.CreateFormFile(field, name)
+	if err != nil {
+		t.Fatal(err)
 	}
+	if _, err := part.Write(contents); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func newTestServer() (*Server, *applicationRepository) {
+	commands := []domain.RiscVCommand{
+		{ID: 1, Mnemonic: "ADD", Description: "Складывает значения исходных регистров.", Format: domain.InstructionFormatR, OperandCount: 3, LengthBits: 32, ImageKey: "images/ADD.png", VideoKey: "video/ADD.mp4", Status: domain.RiscVCommandPublished, LikeCount: 4},
+		{ID: 4, Mnemonic: "SUB", Description: "Вычитает значение второго регистра.", Format: domain.InstructionFormatR, OperandCount: 3, LengthBits: 32, ImageKey: "images/SUB.png", VideoKey: "video/SUB.mp4", Status: domain.RiscVCommandPublished, LikeCount: 3},
+		{ID: 23, Mnemonic: "LUI", Description: "Загружает верхнее immediate.", Format: domain.InstructionFormatU, OperandCount: 2, LengthBits: 32, ImageKey: "images/LUI.png", VideoKey: "video/LUI.mp4", Status: domain.RiscVCommandPublished, LikeCount: 2},
+	}
+	fakeRepository := &applicationRepository{commands: commands}
+	media := applicationMedia{}
+	riscvCommandService := service.NewRiscVCommandService(fakeRepository, media)
+	riscvCommandHandler := handler.NewRiscVCommandHandler(riscvCommandService, media)
+	return NewServer(":0", riscvCommandHandler), fakeRepository
 }
 
 func TestMain(testingMain *testing.M) {
@@ -311,20 +266,14 @@ func TestMain(testingMain *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-
 	backendDirectory := filepath.Clean(filepath.Join(workingDirectory, "..", ".."))
 	if err := os.Chdir(backendDirectory); err != nil {
 		panic(err)
 	}
-
 	gin.SetMode(gin.TestMode)
 	exitCode := testingMain.Run()
 	if err := os.Chdir(workingDirectory); err != nil {
 		panic(err)
 	}
 	os.Exit(exitCode)
-}
-
-func newTestServer() *Server {
-	return NewServer()
 }

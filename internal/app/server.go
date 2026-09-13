@@ -9,37 +9,35 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"riscv-lab/internal/handler"
-	"riscv-lab/internal/repository"
 	"riscv-lab/internal/route"
-	"riscv-lab/internal/service"
 )
 
 type Server struct {
-	router *gin.Engine
+	router  *gin.Engine
+	address string
 }
 
-func NewServer() *Server {
-	repository := repository.NewInstructionRepository()
-	instructionService := service.NewInstructionService(repository)
-	handler := handler.NewInstructionHandler(instructionService)
+func NewServer(address string, riscvCommandHandler *handler.RiscVCommandHandler) *Server {
 	router := gin.Default()
-
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "resources")
 
 	router.GET(route.Root, func(context *gin.Context) {
 		context.Redirect(http.StatusFound, route.Feed)
 	})
-	router.GET(route.Feed, handler.Feed)
-	router.GET(route.Add, handler.Draft)
-	router.GET(route.Grid, handler.Grid)
+	router.GET(route.Feed, riscvCommandHandler.Feed)
+	router.GET(route.Add, riscvCommandHandler.AddPage)
+	router.GET(route.Grid, riscvCommandHandler.Grid)
+	router.POST(route.Add, riscvCommandHandler.CreateDraft)
+	router.POST(route.Publish, riscvCommandHandler.PublishDraft)
+	router.POST(route.Delete, riscvCommandHandler.Delete)
 
-	return &Server{router: router}
+	return &Server{router: router, address: address}
 }
 
 func (server *Server) Run(ctx context.Context) error {
 	httpServer := &http.Server{
-		Addr:              ":8080",
+		Addr:              server.address,
 		Handler:           server.router,
 		ReadHeaderTimeout: 5 * time.Second,
 	}

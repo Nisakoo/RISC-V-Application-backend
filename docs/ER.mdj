@@ -1,0 +1,1082 @@
+{
+	"_type": "Project",
+	"_id": "riscv-lab2-project",
+	"name": "RISC-V Lab 2",
+	"ownedElements": [
+		{
+			"_type": "ERDDataModel",
+			"_id": "riscv-lab2-data-model",
+			"_parent": {
+				"$ref": "riscv-lab2-project"
+			},
+			"name": "RISC-V catalog",
+			"ownedElements": [
+				{
+					"_type": "ERDDiagram",
+					"_id": "riscv-lab2-er-diagram",
+					"_parent": {
+						"$ref": "riscv-lab2-data-model"
+					},
+					"name": "ЛР2 — база данных RISC-V",
+					"defaultDiagram": true,
+					"ownedViews": [
+						{
+							"_type": "ERDEntityView",
+							"_id": "view-users",
+							"_parent": {
+								"$ref": "riscv-lab2-er-diagram"
+							},
+							"model": {
+								"$ref": "entity-users"
+							},
+							"subViews": [
+								{
+									"_type": "LabelView",
+									"_id": "view-users-label",
+									"_parent": {
+										"$ref": "view-users"
+									},
+									"font": "Arial;13;1",
+									"left": 45,
+									"top": 215,
+									"width": 250,
+									"height": 13,
+									"text": "users"
+								},
+								{
+									"_type": "ERDColumnCompartmentView",
+									"_id": "view-users-columns",
+									"_parent": {
+										"$ref": "view-users"
+									},
+									"model": {
+										"$ref": "entity-users"
+									},
+									"subViews": [
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-users-column-1",
+											"_parent": {
+												"$ref": "view-users-columns"
+											},
+											"model": {
+												"$ref": "column-users-id"
+											},
+											"font": "Arial;13;0",
+											"left": 45,
+											"top": 238,
+											"width": 250,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-users-column-2",
+											"_parent": {
+												"$ref": "view-users-columns"
+											},
+											"model": {
+												"$ref": "column-users-login"
+											},
+											"font": "Arial;13;0",
+											"left": 45,
+											"top": 253,
+											"width": 250,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-users-column-3",
+											"_parent": {
+												"$ref": "view-users-columns"
+											},
+											"model": {
+												"$ref": "column-users-password-hash"
+											},
+											"font": "Arial;13;0",
+											"left": 45,
+											"top": 268,
+											"width": 250,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-users-column-4",
+											"_parent": {
+												"$ref": "view-users-columns"
+											},
+											"model": {
+												"$ref": "column-users-role"
+											},
+											"font": "Arial;13;0",
+											"left": 45,
+											"top": 283,
+											"width": 250,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-users-column-5",
+											"_parent": {
+												"$ref": "view-users-columns"
+											},
+											"model": {
+												"$ref": "column-users-created-at"
+											},
+											"font": "Arial;13;0",
+											"left": 45,
+											"top": 298,
+											"width": 250,
+											"height": 13
+										}
+									],
+									"font": "Arial;13;0",
+									"left": 40,
+									"top": 233,
+									"width": 260,
+									"height": 83
+								}
+							],
+							"font": "Arial;13;0",
+							"left": 40,
+							"top": 210,
+							"width": 260,
+							"height": 106,
+							"nameLabel": {
+								"$ref": "view-users-label"
+							},
+							"columnCompartment": {
+								"$ref": "view-users-columns"
+							}
+						},
+						{
+							"_type": "ERDEntityView",
+							"_id": "view-riscv-commands",
+							"_parent": {
+								"$ref": "riscv-lab2-er-diagram"
+							},
+							"model": {
+								"$ref": "entity-riscv-commands"
+							},
+							"subViews": [
+								{
+									"_type": "LabelView",
+									"_id": "view-riscv-commands-label",
+									"_parent": {
+										"$ref": "view-riscv-commands"
+									},
+									"font": "Arial;13;1",
+									"left": 365,
+									"top": 45,
+									"width": 320,
+									"height": 13,
+									"text": "riscv_commands"
+								},
+								{
+									"_type": "ERDColumnCompartmentView",
+									"_id": "view-riscv-commands-columns",
+									"_parent": {
+										"$ref": "view-riscv-commands"
+									},
+									"model": {
+										"$ref": "entity-riscv-commands"
+									},
+									"subViews": [
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-1",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-id"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 68,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-2",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-mnemonic"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 83,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-3",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-assembly-example"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 98,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-4",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-description"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 113,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-5",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-format"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 128,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-6",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-operand-count"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 143,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-7",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-length-bits"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 158,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-8",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-image-key"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 173,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-9",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-video-key"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 188,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-10",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-status"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 203,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-11",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-created-at"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 218,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-12",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-published-at"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 233,
+											"width": 320,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-commands-column-13",
+											"_parent": {
+												"$ref": "view-riscv-commands-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-commands-creator-id"
+											},
+											"font": "Arial;13;0",
+											"left": 365,
+											"top": 248,
+											"width": 320,
+											"height": 13
+										}
+									],
+									"font": "Arial;13;0",
+									"left": 360,
+									"top": 63,
+									"width": 330,
+									"height": 203
+								}
+							],
+							"font": "Arial;13;0",
+							"left": 360,
+							"top": 40,
+							"width": 330,
+							"height": 226,
+							"nameLabel": {
+								"$ref": "view-riscv-commands-label"
+							},
+							"columnCompartment": {
+								"$ref": "view-riscv-commands-columns"
+							}
+						},
+						{
+							"_type": "ERDEntityView",
+							"_id": "view-riscv-command-likes",
+							"_parent": {
+								"$ref": "riscv-lab2-er-diagram"
+							},
+							"model": {
+								"$ref": "entity-riscv-command-likes"
+							},
+							"subViews": [
+								{
+									"_type": "LabelView",
+									"_id": "view-riscv-command-likes-label",
+									"_parent": {
+										"$ref": "view-riscv-command-likes"
+									},
+									"font": "Arial;13;1",
+									"left": 765,
+									"top": 225,
+									"width": 290,
+									"height": 13,
+									"text": "riscv_command_likes"
+								},
+								{
+									"_type": "ERDColumnCompartmentView",
+									"_id": "view-riscv-command-likes-columns",
+									"_parent": {
+										"$ref": "view-riscv-command-likes"
+									},
+									"model": {
+										"$ref": "entity-riscv-command-likes"
+									},
+									"subViews": [
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-command-likes-column-1",
+											"_parent": {
+												"$ref": "view-riscv-command-likes-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-command-likes-id"
+											},
+											"font": "Arial;13;0",
+											"left": 765,
+											"top": 248,
+											"width": 290,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-command-likes-column-2",
+											"_parent": {
+												"$ref": "view-riscv-command-likes-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-command-likes-user-id"
+											},
+											"font": "Arial;13;0",
+											"left": 765,
+											"top": 263,
+											"width": 290,
+											"height": 13
+										},
+										{
+											"_type": "ERDColumnView",
+											"_id": "view-riscv-command-likes-column-3",
+											"_parent": {
+												"$ref": "view-riscv-command-likes-columns"
+											},
+											"model": {
+												"$ref": "column-riscv-command-likes-riscv-command-id"
+											},
+											"font": "Arial;13;0",
+											"left": 765,
+											"top": 278,
+											"width": 290,
+											"height": 13
+										}
+									],
+									"font": "Arial;13;0",
+									"left": 760,
+									"top": 243,
+									"width": 300,
+									"height": 53
+								}
+							],
+							"font": "Arial;13;0",
+							"left": 760,
+							"top": 220,
+							"width": 300,
+							"height": 76,
+							"nameLabel": {
+								"$ref": "view-riscv-command-likes-label"
+							},
+							"columnCompartment": {
+								"$ref": "view-riscv-command-likes-columns"
+							}
+						},
+						{
+							"_type": "ERDRelationshipView",
+							"_id": "relation-users-commands-view",
+							"_parent": {
+								"$ref": "riscv-lab2-er-diagram"
+							},
+							"model": {
+								"$ref": "relation-users-commands"
+							},
+							"subViews": [
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-users-commands-view-name",
+									"_parent": {
+										"$ref": "relation-users-commands-view"
+									},
+									"font": "Arial;13;0",
+									"left": 305,
+									"top": 190,
+									"width": 70,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-users-commands-view"
+									},
+									"edgePosition": 1,
+									"text": "creates"
+								},
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-users-commands-view-tail",
+									"_parent": {
+										"$ref": "relation-users-commands-view"
+									},
+									"visible": false,
+									"font": "Arial;13;0",
+									"left": 305,
+									"top": 175,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-users-commands-view"
+									},
+									"edgePosition": 2
+								},
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-users-commands-view-head",
+									"_parent": {
+										"$ref": "relation-users-commands-view"
+									},
+									"visible": false,
+									"font": "Arial;13;0",
+									"left": 305,
+									"top": 205,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-users-commands-view"
+									}
+								}
+							],
+							"font": "Arial;13;0",
+							"head": {
+								"$ref": "view-riscv-commands"
+							},
+							"tail": {
+								"$ref": "view-users"
+							},
+							"lineStyle": 2,
+							"points": "300:260;330:260;330:155;360:155",
+							"nameLabel": {
+								"$ref": "relation-users-commands-view-name"
+							},
+							"tailNameLabel": {
+								"$ref": "relation-users-commands-view-tail"
+							},
+							"headNameLabel": {
+								"$ref": "relation-users-commands-view-head"
+							}
+						},
+						{
+							"_type": "ERDRelationshipView",
+							"_id": "relation-users-likes-view",
+							"_parent": {
+								"$ref": "riscv-lab2-er-diagram"
+							},
+							"model": {
+								"$ref": "relation-users-likes"
+							},
+							"subViews": [
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-users-likes-view-name",
+									"_parent": {
+										"$ref": "relation-users-likes-view"
+									},
+									"font": "Arial;13;0",
+									"left": 510,
+									"top": 262,
+									"width": 70,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-users-likes-view"
+									},
+									"edgePosition": 1,
+									"text": "sets"
+								},
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-users-likes-view-tail",
+									"_parent": {
+										"$ref": "relation-users-likes-view"
+									},
+									"visible": false,
+									"font": "Arial;13;0",
+									"left": 510,
+									"top": 247,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-users-likes-view"
+									},
+									"edgePosition": 2
+								},
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-users-likes-view-head",
+									"_parent": {
+										"$ref": "relation-users-likes-view"
+									},
+									"visible": false,
+									"font": "Arial;13;0",
+									"left": 510,
+									"top": 277,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-users-likes-view"
+									}
+								}
+							],
+							"font": "Arial;13;0",
+							"head": {
+								"$ref": "view-riscv-command-likes"
+							},
+							"tail": {
+								"$ref": "view-users"
+							},
+							"lineStyle": 2,
+							"points": "300:280;530:280;530:288;760:288",
+							"nameLabel": {
+								"$ref": "relation-users-likes-view-name"
+							},
+							"tailNameLabel": {
+								"$ref": "relation-users-likes-view-tail"
+							},
+							"headNameLabel": {
+								"$ref": "relation-users-likes-view-head"
+							}
+						},
+						{
+							"_type": "ERDRelationshipView",
+							"_id": "relation-commands-likes-view",
+							"_parent": {
+								"$ref": "riscv-lab2-er-diagram"
+							},
+							"model": {
+								"$ref": "relation-commands-likes"
+							},
+							"subViews": [
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-commands-likes-view-name",
+									"_parent": {
+										"$ref": "relation-commands-likes-view"
+									},
+									"font": "Arial;13;0",
+									"left": 690,
+									"top": 214,
+									"width": 70,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-commands-likes-view"
+									},
+									"edgePosition": 1,
+									"text": "receives"
+								},
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-commands-likes-view-tail",
+									"_parent": {
+										"$ref": "relation-commands-likes-view"
+									},
+									"visible": false,
+									"font": "Arial;13;0",
+									"left": 690,
+									"top": 199,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-commands-likes-view"
+									},
+									"edgePosition": 2
+								},
+								{
+									"_type": "EdgeLabelView",
+									"_id": "relation-commands-likes-view-head",
+									"_parent": {
+										"$ref": "relation-commands-likes-view"
+									},
+									"visible": false,
+									"font": "Arial;13;0",
+									"left": 690,
+									"top": 229,
+									"height": 13,
+									"hostEdge": {
+										"$ref": "relation-commands-likes-view"
+									}
+								}
+							],
+							"font": "Arial;13;0",
+							"head": {
+								"$ref": "view-riscv-command-likes"
+							},
+							"tail": {
+								"$ref": "view-riscv-commands"
+							},
+							"lineStyle": 2,
+							"points": "690:190;725:190;725:260;760:260",
+							"nameLabel": {
+								"$ref": "relation-commands-likes-view-name"
+							},
+							"tailNameLabel": {
+								"$ref": "relation-commands-likes-view-tail"
+							},
+							"headNameLabel": {
+								"$ref": "relation-commands-likes-view-head"
+							}
+						}
+					]
+				},
+				{
+					"_type": "ERDEntity",
+					"_id": "entity-users",
+					"_parent": {
+						"$ref": "riscv-lab2-data-model"
+					},
+					"name": "users",
+					"ownedElements": [
+						{
+							"_type": "ERDRelationship",
+							"_id": "relation-users-commands",
+							"_parent": {
+								"$ref": "entity-users"
+							},
+							"name": "creates",
+							"end1": {
+								"_type": "ERDRelationshipEnd",
+								"_id": "relation-users-commands-end-1",
+								"_parent": {
+									"$ref": "relation-users-commands"
+								},
+								"reference": {
+									"$ref": "entity-users"
+								}
+							},
+							"end2": {
+								"_type": "ERDRelationshipEnd",
+								"_id": "relation-users-commands-end-2",
+								"_parent": {
+									"$ref": "relation-users-commands"
+								},
+								"reference": {
+									"$ref": "entity-riscv-commands"
+								},
+								"cardinality": "0..*"
+							}
+						},
+						{
+							"_type": "ERDRelationship",
+							"_id": "relation-users-likes",
+							"_parent": {
+								"$ref": "entity-users"
+							},
+							"name": "sets",
+							"end1": {
+								"_type": "ERDRelationshipEnd",
+								"_id": "relation-users-likes-end-1",
+								"_parent": {
+									"$ref": "relation-users-likes"
+								},
+								"reference": {
+									"$ref": "entity-users"
+								}
+							},
+							"end2": {
+								"_type": "ERDRelationshipEnd",
+								"_id": "relation-users-likes-end-2",
+								"_parent": {
+									"$ref": "relation-users-likes"
+								},
+								"reference": {
+									"$ref": "entity-riscv-command-likes"
+								},
+								"cardinality": "0..*"
+							}
+						}
+					],
+					"columns": [
+						{
+							"_type": "ERDColumn",
+							"_id": "column-users-id",
+							"_parent": {
+								"$ref": "entity-users"
+							},
+							"name": "id",
+							"type": "BIGINT",
+							"length": 0,
+							"primaryKey": true
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-users-login",
+							"_parent": {
+								"$ref": "entity-users"
+							},
+							"name": "login",
+							"type": "VARCHAR",
+							"length": "64"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-users-password-hash",
+							"_parent": {
+								"$ref": "entity-users"
+							},
+							"name": "password_hash",
+							"type": "VARCHAR",
+							"length": "255"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-users-role",
+							"_parent": {
+								"$ref": "entity-users"
+							},
+							"name": "role",
+							"type": "VARCHAR",
+							"length": "16"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-users-created-at",
+							"_parent": {
+								"$ref": "entity-users"
+							},
+							"name": "created_at",
+							"type": "TIMESTAMPTZ",
+							"length": 0
+						}
+					]
+				},
+				{
+					"_type": "ERDEntity",
+					"_id": "entity-riscv-commands",
+					"_parent": {
+						"$ref": "riscv-lab2-data-model"
+					},
+					"name": "riscv_commands",
+					"ownedElements": [
+						{
+							"_type": "ERDRelationship",
+							"_id": "relation-commands-likes",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "receives",
+							"end1": {
+								"_type": "ERDRelationshipEnd",
+								"_id": "relation-commands-likes-end-1",
+								"_parent": {
+									"$ref": "relation-commands-likes"
+								},
+								"reference": {
+									"$ref": "entity-riscv-commands"
+								}
+							},
+							"end2": {
+								"_type": "ERDRelationshipEnd",
+								"_id": "relation-commands-likes-end-2",
+								"_parent": {
+									"$ref": "relation-commands-likes"
+								},
+								"reference": {
+									"$ref": "entity-riscv-command-likes"
+								},
+								"cardinality": "0..*"
+							}
+						}
+					],
+					"columns": [
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-id",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "id",
+							"type": "BIGINT",
+							"length": 0,
+							"primaryKey": true
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-mnemonic",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "mnemonic",
+							"type": "VARCHAR",
+							"length": "16"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-assembly-example",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "assembly_example",
+							"type": "VARCHAR",
+							"length": "128"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-description",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "description",
+							"type": "VARCHAR",
+							"length": "1000"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-format",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "format",
+							"type": "VARCHAR",
+							"length": "1"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-operand-count",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "operand_count",
+							"type": "SMALLINT",
+							"length": 0
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-length-bits",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "length_bits",
+							"type": "SMALLINT",
+							"length": 0
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-image-key",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "image_key",
+							"type": "VARCHAR",
+							"length": "255"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-video-key",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "video_key",
+							"type": "VARCHAR",
+							"length": "255"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-status",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "status",
+							"type": "VARCHAR",
+							"length": "16"
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-created-at",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "created_at",
+							"type": "TIMESTAMPTZ",
+							"length": 0
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-published-at",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "published_at",
+							"type": "TIMESTAMPTZ",
+							"length": 0
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-commands-creator-id",
+							"_parent": {
+								"$ref": "entity-riscv-commands"
+							},
+							"name": "creator_id",
+							"type": "BIGINT",
+							"length": 0,
+							"foreignKey": true,
+							"referenceTo": {
+								"$ref": "column-users-id"
+							}
+						}
+					]
+				},
+				{
+					"_type": "ERDEntity",
+					"_id": "entity-riscv-command-likes",
+					"_parent": {
+						"$ref": "riscv-lab2-data-model"
+					},
+					"name": "riscv_command_likes",
+					"columns": [
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-command-likes-id",
+							"_parent": {
+								"$ref": "entity-riscv-command-likes"
+							},
+							"name": "id",
+							"type": "BIGINT",
+							"length": 0,
+							"primaryKey": true
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-command-likes-user-id",
+							"_parent": {
+								"$ref": "entity-riscv-command-likes"
+							},
+							"name": "user_id",
+							"type": "BIGINT",
+							"length": 0,
+							"foreignKey": true,
+							"referenceTo": {
+								"$ref": "column-users-id"
+							}
+						},
+						{
+							"_type": "ERDColumn",
+							"_id": "column-riscv-command-likes-riscv-command-id",
+							"_parent": {
+								"$ref": "entity-riscv-command-likes"
+							},
+							"name": "riscv_command_id",
+							"type": "BIGINT",
+							"length": 0,
+							"foreignKey": true,
+							"referenceTo": {
+								"$ref": "column-riscv-commands-id"
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

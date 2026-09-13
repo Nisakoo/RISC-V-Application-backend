@@ -5,32 +5,33 @@
 <body>
   <div class="phone">
     <main class="page-view feed-page">
-      <video class="feed-video" autoplay muted loop playsinline preload="metadata" poster="{{ .Instruction.ImageURL }}">
-        <source src="{{ .Instruction.VideoURL }}" type="video/mp4">
+      <video class="feed-video" autoplay muted loop playsinline preload="metadata" poster="{{ .RiscVCommand.ImageURL }}">
+        <source src="{{ .RiscVCommand.VideoURL }}" type="video/mp4">
         Ваш браузер не поддерживает воспроизведение видео.
       </video>
       <div class="feed-shade"></div>
       <section class="feed-content">
         <div class="feed-progress" aria-hidden="true"></div>
-        <p class="feed-eyebrow"><span></span>{{ .Instruction.Mnemonic }}</p>
+        <p class="feed-eyebrow"><span></span>{{ .RiscVCommand.Mnemonic }}</p>
+        <code class="feed-example">{{ .RiscVCommand.AssemblyExample }}</code>
         <div class="feed-information">
           <details class="feed-description">
             <summary>
-              <span class="feed-description-collapsed"><span class="feed-description-text">{{ .Instruction.Description }}</span><span class="feed-description-toggle">ещё</span></span>
-              <span class="feed-description-expanded">{{ .Instruction.Description }} <span class="feed-description-toggle">меньше</span></span>
+              <span class="feed-description-collapsed"><span class="feed-description-text">{{ .RiscVCommand.Description }}</span><span class="feed-description-toggle">ещё</span></span>
+              <span class="feed-description-expanded">{{ .RiscVCommand.Description }} <span class="feed-description-toggle">меньше</span></span>
             </summary>
           </details>
           <dl class="feed-properties" aria-label="Параметры инструкции">
-            <div><dt class="visually-hidden">Формат</dt><dd>{{ .Instruction.Format }}</dd></div>
-            <div><dt class="visually-hidden">Операнды</dt><dd>{{ .Instruction.OperandCount }}</dd></div>
-            <div><dt class="visually-hidden">Длина</dt><dd>{{ .Instruction.LengthBits }} бит</dd></div>
+            <div><dt class="visually-hidden">Формат</dt><dd>{{ .RiscVCommand.Format }}</dd></div>
+            <div><dt class="visually-hidden">Операнды</dt><dd>{{ .RiscVCommand.OperandCount }}</dd></div>
+            <div><dt class="visually-hidden">Длина</dt><dd>{{ .RiscVCommand.LengthBits }} бит</dd></div>
           </dl>
         </div>
         <div class="feed-actions">
-          <a class="button primary-action" href="{{ .NextInstructionURL }}">Следующий</a>
-          <div class="feed-like" aria-label="{{ .Instruction.LikeCount }} отметок нравится">
+          <a class="button primary-action" href="{{ .NextRiscVCommandURL }}">Следующий</a>
+          <div class="feed-like" aria-label="{{ .RiscVCommand.LikeCount }} отметок нравится">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-            <small>{{ .Instruction.LikeCount }}</small>
+            <small>{{ .RiscVCommand.LikeCount }}</small>
           </div>
         </div>
       </section>

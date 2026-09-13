@@ -21,11 +21,13 @@ type layoutView struct {
 	ActivePage activePage
 	FeedURL    string
 	AddURL     string
+	PublishURL string
+	DeleteURL  string
 	GridURL    string
 }
 
-type instructionView struct {
-	ID              int
+type riscvCommandView struct {
+	ID              int64
 	Mnemonic        string
 	AssemblyExample string
 	Description     string
@@ -34,27 +36,30 @@ type instructionView struct {
 	LengthBits      int
 	ImageURL        string
 	VideoURL        string
-	LikeCount       int
+	LikeCount       int64
 }
 
 type feedPageView struct {
-	Layout             layoutView
-	Instruction        instructionView
-	NextInstructionURL string
+	Layout              layoutView
+	RiscVCommand        riscvCommandView
+	NextRiscVCommandURL string
 }
 
 type draftPageView struct {
-	Layout      layoutView
-	Instruction instructionView
+	Layout       layoutView
+	HasDraft     bool
+	RiscVCommand riscvCommandView
+	ErrorMessage string
 }
 
 type gridPageView struct {
 	Layout              layoutView
-	Instructions        []instructionView
+	RiscVCommands       []riscvCommandView
 	MinimumOperandCount int
 	MaximumOperandCount int
 	RangeStart          int
 	RangeEnd            int
+	ErrorMessage        string
 }
 
 type errorPageView struct {
@@ -83,6 +88,8 @@ func newLayoutView(title string, activePage activePage) layoutView {
 		ActivePage: activePage,
 		FeedURL:    route.Feed,
 		AddURL:     route.Add,
+		PublishURL: route.Publish,
+		DeleteURL:  route.Delete,
 		GridURL:    route.Grid,
 	}
 }
