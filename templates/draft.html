@@ -6,43 +6,82 @@
   <div class="phone">
     <main class="page-view plain-page">
       <section class="page-content add-page">
-        <h1>Добавление инструкции</h1>
-        <p class="page-subtitle">Заполните поля, чтобы добавить инструкцию</p>
-        <form aria-describedby="draft-mode-note">
-          <p class="visually-hidden" id="draft-mode-note">В первой лабораторной данные формы не сохраняются.</p>
+        <h1>Добавление команды</h1>
+        {{ if .HasDraft }}
+        <p class="page-subtitle">Заполните параметры черновика {{ .RiscVCommand.Mnemonic }}</p>
+        {{ else }}
+        <p class="page-subtitle">Создайте черновик команды RISC-V</p>
+        {{ end }}
+        {{ if .ErrorMessage }}<p class="form-error" role="alert">{{ .ErrorMessage }}</p>{{ end }}
+
+        {{ if .HasDraft }}
+        <div class="draft-media-preview">
+          <img src="{{ .RiscVCommand.ImageURL }}" alt="Схема команды {{ .RiscVCommand.Mnemonic }}">
+          <video controls preload="metadata" poster="{{ .RiscVCommand.ImageURL }}">
+            <source src="{{ .RiscVCommand.VideoURL }}">
+          </video>
+        </div>
+        <form method="post" action="{{ .Layout.PublishURL }}">
+          <div class="form-field">
+            <label class="form-label" for="riscv-command-mnemonic">Команда</label>
+            <input class="form-control" id="riscv-command-mnemonic" value="{{ .RiscVCommand.Mnemonic }}" readonly>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="riscv-command-example">Пример ассемблерной записи</label>
+            <input class="form-control" id="riscv-command-example" name="assembly_example" required minlength="3" maxlength="128" value="{{ .RiscVCommand.AssemblyExample }}" placeholder="add x3, x1, x2">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="riscv-command-description">Краткое описание</label>
+            <textarea class="form-control" id="riscv-command-description" name="description" rows="4" required minlength="10" maxlength="1000">{{ .RiscVCommand.Description }}</textarea>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="riscv-command-format">Формат инструкции</label>
+            <select class="form-control" id="riscv-command-format" name="format" required>
+              <option value="">Выберите формат</option>
+              <option value="R"{{ if eq .RiscVCommand.Format "R" }} selected{{ end }}>R — регистр-регистр</option>
+              <option value="I"{{ if eq .RiscVCommand.Format "I" }} selected{{ end }}>I — immediate/загрузка</option>
+              <option value="S"{{ if eq .RiscVCommand.Format "S" }} selected{{ end }}>S — сохранение</option>
+              <option value="B"{{ if eq .RiscVCommand.Format "B" }} selected{{ end }}>B — ветвление</option>
+              <option value="U"{{ if eq .RiscVCommand.Format "U" }} selected{{ end }}>U — верхний immediate</option>
+              <option value="J"{{ if eq .RiscVCommand.Format "J" }} selected{{ end }}>J — переход</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="riscv-command-operands">Количество операндов</label>
+            <input class="form-control" id="riscv-command-operands" name="operand_count" type="number" min="2" max="3" required value="{{ .RiscVCommand.OperandCount }}">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="riscv-command-length">Длина команды, бит</label>
+            <select class="form-control" id="riscv-command-length" name="length_bits" required>
+              <option value="16"{{ if eq .RiscVCommand.LengthBits 16 }} selected{{ end }}>16</option>
+              <option value="32"{{ if eq .RiscVCommand.LengthBits 32 }} selected{{ end }}>32</option>
+              <option value="48"{{ if eq .RiscVCommand.LengthBits 48 }} selected{{ end }}>48</option>
+              <option value="64"{{ if eq .RiscVCommand.LengthBits 64 }} selected{{ end }}>64</option>
+            </select>
+          </div>
+          <button class="button primary-action" type="submit">Опубликовать</button>
+        </form>
+        {{ else }}
+        <form method="post" action="{{ .Layout.AddURL }}" enctype="multipart/form-data">
           <div class="media-fields">
-            <input class="visually-hidden media-input" id="instruction-video" name="instruction_video" type="file" accept="video/mp4,video/quicktime">
-            <label class="media-field" for="instruction-video">
+            <input class="visually-hidden media-input" id="riscv-command-video" name="riscv_command_video" type="file" required accept="video/mp4,video/quicktime">
+            <label class="media-field" for="riscv-command-video">
               <span class="media-field__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="m10 9 5 3-5 3Z"/></svg></span>
               <strong>Видео</strong><small>MP4, MOV · до 500 МБ</small>
             </label>
-            <input class="visually-hidden media-input" id="instruction-image" name="instruction_image" type="file" accept="image/png,image/jpeg">
-            <label class="media-field" for="instruction-image">
+            <input class="visually-hidden media-input" id="riscv-command-image" name="riscv_command_image" type="file" required accept="image/png,image/jpeg">
+            <label class="media-field" for="riscv-command-image">
               <span class="media-field__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="15.5" cy="9" r="1.5"/><path d="m6.5 17 4.5-5 3 3 2-2 2.5 4Z"/></svg></span>
               <strong>Изображение</strong><small>PNG, JPG · до 20 МБ</small>
             </label>
           </div>
           <div class="form-field">
-            <label class="form-label" for="instruction-mnemonic">Инструкция</label>
-            <input class="form-control" id="instruction-mnemonic" name="mnemonic" value="{{ .Instruction.Mnemonic }}">
+            <label class="form-label" for="riscv-command-create-mnemonic">Команда</label>
+            <input class="form-control" id="riscv-command-create-mnemonic" name="mnemonic" required minlength="2" maxlength="16" pattern="[A-Za-z][A-Za-z0-9.]{1,15}" value="{{ .RiscVCommand.Mnemonic }}" placeholder="XOR">
           </div>
-          <div class="form-field">
-            <label class="form-label" for="instruction-description">Описание</label>
-            <textarea class="form-control" id="instruction-description" name="description" rows="3">{{ .Instruction.Description }}</textarea>
-          </div>
-          <div class="form-field">
-            <label class="form-label" for="instruction-format">Тип инструкции</label>
-            <input class="form-control" id="instruction-format" name="format" value="{{ .Instruction.Format }}">
-          </div>
-          <div class="form-field">
-            <label class="form-label" for="instruction-operands">Количество операндов</label>
-            <input class="form-control" id="instruction-operands" name="operand_count" type="number" min="0" max="3" value="{{ .Instruction.OperandCount }}">
-          </div>
-          <div class="form-field">
-            <label class="form-label" for="instruction-length">Длина команды, бит</label>
-            <input class="form-control" id="instruction-length" name="length_bits" type="number" min="16" max="64" step="16" value="{{ .Instruction.LengthBits }}">
-          </div>
+          <button class="button primary-action" type="submit">Далее</button>
         </form>
+        {{ end }}
       </section>
     </main>
     {{ template "navigation" .Layout }}

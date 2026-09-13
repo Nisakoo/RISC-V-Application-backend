@@ -47,9 +47,10 @@ h2 { line-height: 1.2; }
 
 button,
 input,
+select,
 textarea { font: inherit; }
 
-:where(a, button, input, textarea, summary):focus-visible {
+:where(a, button, input, select, textarea, summary):focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
 }
@@ -207,6 +208,17 @@ textarea { font: inherit; }
   margin-right: 10px;
   border-radius: 50%;
   background: var(--color-accent);
+}
+
+.feed-example {
+  display: block;
+  width: fit-content;
+  padding: 5px 8px;
+  margin-top: 8px;
+  border-radius: 8px;
+  background: rgba(17, 18, 25, .56);
+  color: #fff;
+  font-size: 14px;
 }
 
 .feed-information {
@@ -424,6 +436,35 @@ textarea { font: inherit; }
 }
 
 .form-field .form-control:focus-visible { outline: 0; }
+
+.form-error {
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  border: 1px solid #d65757;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #8f2020;
+  font-size: 14px;
+}
+
+.draft-media-preview {
+  display: grid;
+  margin-bottom: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.draft-media-preview img,
+.draft-media-preview video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / .8;
+  border-radius: 14px;
+  background: #171820;
+  object-fit: cover;
+}
+
+.form-control[readonly] { color: #626471; }
 /* Фильтр и плитка инструкций */
 .operand-filter { margin: 8px 3px 18px; }
 
@@ -601,6 +642,21 @@ textarea { font: inherit; }
   color: #584110;
   font-weight: 700;
 }
+
+.instruction-card__delete {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 12px;
+  border: 1px solid #d65757;
+  border-radius: 10px;
+  background: #fff;
+  color: #a12b2b;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.instruction-card__delete:hover { background: #fff0f0; }
 
 .instruction-empty {
   grid-column: 1 / -1;
