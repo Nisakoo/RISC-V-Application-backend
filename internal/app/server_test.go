@@ -12,7 +12,7 @@ import (
 )
 
 func TestLabOnePages(t *testing.T) {
-	server := newTestServer(t)
+	server := newTestServer()
 
 	tests := []struct {
 		name       string
@@ -20,19 +20,131 @@ func TestLabOnePages(t *testing.T) {
 		statusCode int
 		contains   []string
 		excludes   []string
+		ordered    []string
 	}{
-		{name: "лента с корневого адреса", url: "/", statusCode: http.StatusOK, contains: []string{"<title>ADD · RISC-V</title>", "<div class=\"feed-progress\" aria-hidden=\"true\"></div>", "class=\"feed-description-toggle\">ещё", "class=\"feed-description-toggle\">меньше", "class=\"feed-like\"", "href=\"/\" aria-current=\"page\"", "<svg"}, excludes: []string{"♡", "<script"}},
-		{name: "лента по идентификатору", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>"}},
-		{name: "ссылка на следующую команду из коллекции", url: "/?id=4", statusCode: http.StatusOK, contains: []string{"<title>SUB · RISC-V</title>", "href=\"/?id=9\""}},
-		{name: "циклическая ссылка после последней команды", url: "/?id=42", statusCode: http.StatusOK, contains: []string{"<title>JAL · RISC-V</title>", "href=\"/?id=1\""}},
-		{name: "черновик", url: "/instruction/draft", statusCode: http.StatusOK, contains: []string{"value=\"ADD\"", "Основная навигация", "href=\"/instruction/draft\" aria-current=\"page\"", "данные формы не сохраняются"}, excludes: []string{"breadcrumbs", "<script"}},
-		{name: "серверная фильтрация плитки", url: "/instructions?min_operands=2&max_operands=2", statusCode: http.StatusOK, contains: []string{"<h2 class=\"card-title\">LUI</h2>", "<h2 class=\"card-title\">JAL</h2>", ">Показать</button>", "operand-range__dot--2 active", "href=\"/instructions\" aria-current=\"page\""}, excludes: []string{"<h2 class=\"card-title\">SUB</h2>", "breadcrumbs", "operand-range__dot--0 active", "operand-range__dot--1 active", "operand-range__dot--3 active", "<script", "data-video-url"}},
-		{name: "перевёрнутый диапазон нормализуется", url: "/instructions?min_operands=3&max_operands=2", statusCode: http.StatusOK, contains: []string{"name=\"min_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"2\"", "name=\"max_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"3\""}},
-		{name: "некорректный диапазон заменяется полным", url: "/instructions?min_operands=abc&max_operands=8", statusCode: http.StatusOK, contains: []string{"name=\"min_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"0\"", "name=\"max_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"3\""}},
-		{name: "удалённая команда исключена из плитки", url: "/instructions", statusCode: http.StatusOK, excludes: []string{"<h2 class=\"card-title\">AND</h2>"}},
-		{name: "некорректный идентификатор", url: "/?id=abc", statusCode: http.StatusBadRequest, contains: []string{"<title>Некорректный идентификатор · RISC-V</title>", "Некорректный идентификатор команды.", "href=\"/\">Открыть ленту</a>"}},
-		{name: "неизвестная команда", url: "/?id=999", statusCode: http.StatusNotFound, contains: []string{"<title>Команда не найдена · RISC-V</title>", "href=\"/\">Открыть ленту</a>"}},
-		{name: "удалённая команда", url: "/?id=77", statusCode: http.StatusNotFound, contains: []string{"<title>Команда не найдена · RISC-V</title>"}},
+		{
+			name:       "лента без идентификатора",
+			url:        "/riscv_commands/feed",
+			statusCode: http.StatusOK,
+			contains: []string{
+				"<title>ADD · RISC-V</title>",
+				"<div class=\"feed-progress\" aria-hidden=\"true\"></div>",
+				"class=\"feed-description-toggle\">ещё",
+				"class=\"feed-description-toggle\">меньше",
+				"<dt class=\"visually-hidden\">Длина</dt><dd>32 бит</dd>",
+				"class=\"feed-like\"",
+				"href=\"/riscv_commands/feed\" aria-current=\"page\"",
+			},
+			excludes: []string{"♡", "<dt>Формат</dt>", "<dt>Операнды</dt>", "<dt>Длина</dt>", "feed-side", "<script"},
+			ordered: []string{
+				"<div class=\"feed-information\">",
+				"<details class=\"feed-description\">",
+				"<dl class=\"feed-properties\"",
+				"<div class=\"feed-actions\">",
+				"class=\"feed-like\"",
+			},
+		},
+		{
+			name:       "лента по идентификатору",
+			url:        "/riscv_commands/feed?id=4",
+			statusCode: http.StatusOK,
+			contains:   []string{"<title>SUB · RISC-V</title>"},
+		},
+		{
+			name:       "ссылка на следующую команду из коллекции",
+			url:        "/riscv_commands/feed?id=4",
+			statusCode: http.StatusOK,
+			contains:   []string{"<title>SUB · RISC-V</title>", "href=\"/riscv_commands/feed?id=9\""},
+		},
+		{
+			name:       "циклическая ссылка после последней команды",
+			url:        "/riscv_commands/feed?id=42",
+			statusCode: http.StatusOK,
+			contains:   []string{"<title>JAL · RISC-V</title>", "href=\"/riscv_commands/feed?id=1\""},
+		},
+		{
+			name:       "черновик без кнопки добавления",
+			url:        "/riscv_commands/add",
+			statusCode: http.StatusOK,
+			contains: []string{
+				"value=\"ADD\"",
+				"name=\"length_bits\"",
+				"value=\"32\"",
+				"href=\"/riscv_commands/add\" aria-current=\"page\"",
+				"данные формы не сохраняются",
+			},
+			excludes: []string{"Добавить в ленту", "<script"},
+		},
+		{
+			name:       "серверная фильтрация плитки",
+			url:        "/riscv_commands/grid?min_operands=2&max_operands=2",
+			statusCode: http.StatusOK,
+			contains: []string{
+				"<h2 class=\"card-title\">LUI</h2>",
+				"<h2 class=\"card-title\">JAL</h2>",
+				">Показать</button>",
+				"operand-range__dot--2 active",
+				"href=\"/riscv_commands/grid\" aria-current=\"page\"",
+				"U · 2 · 32 бит",
+			},
+			excludes: []string{
+				"<h2 class=\"card-title\">SUB</h2>",
+				"operand-range__dot--0 active",
+				"operand-range__dot--1 active",
+				"operand-range__dot--3 active",
+				"<script",
+				"data-video-url",
+			},
+		},
+		{
+			name:       "перевёрнутый диапазон нормализуется",
+			url:        "/riscv_commands/grid?min_operands=3&max_operands=2",
+			statusCode: http.StatusOK,
+			contains: []string{
+				"name=\"min_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"2\"",
+				"name=\"max_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"3\"",
+			},
+		},
+		{
+			name:       "некорректный диапазон заменяется полным",
+			url:        "/riscv_commands/grid?min_operands=abc&max_operands=8",
+			statusCode: http.StatusOK,
+			contains: []string{
+				"name=\"min_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"0\"",
+				"name=\"max_operands\" type=\"range\" min=\"0\" max=\"3\" value=\"3\"",
+			},
+		},
+		{
+			name:       "удалённая команда исключена из плитки",
+			url:        "/riscv_commands/grid",
+			statusCode: http.StatusOK,
+			excludes:   []string{"<h2 class=\"card-title\">AND</h2>"},
+		},
+		{
+			name:       "некорректный идентификатор",
+			url:        "/riscv_commands/feed?id=abc",
+			statusCode: http.StatusBadRequest,
+			contains: []string{
+				"<title>Некорректный идентификатор · RISC-V</title>",
+				"Некорректный идентификатор команды.",
+				"href=\"/riscv_commands/feed\">Открыть ленту</a>",
+			},
+		},
+		{
+			name:       "неизвестная команда",
+			url:        "/riscv_commands/feed?id=999",
+			statusCode: http.StatusNotFound,
+			contains: []string{
+				"<title>Команда не найдена · RISC-V</title>",
+				"href=\"/riscv_commands/feed\">Открыть ленту</a>",
+			},
+		},
+		{
+			name:       "удалённая команда",
+			url:        "/riscv_commands/feed?id=77",
+			statusCode: http.StatusNotFound,
+			contains:   []string{"<title>Команда не найдена · RISC-V</title>"},
+		},
 	}
 
 	for _, test := range tests {
@@ -45,43 +157,45 @@ func TestLabOnePages(t *testing.T) {
 				t.Fatalf("получен код %d, ожидался %d", response.Code, test.statusCode)
 			}
 
+			body := response.Body.String()
 			for _, fragment := range test.contains {
-				if !strings.Contains(response.Body.String(), fragment) {
+				if !strings.Contains(body, fragment) {
 					t.Errorf("в ответе отсутствует %q", fragment)
 				}
 			}
 			for _, fragment := range test.excludes {
-				if strings.Contains(response.Body.String(), fragment) {
+				if strings.Contains(body, fragment) {
 					t.Errorf("ответ не должен содержать %q", fragment)
 				}
 			}
-			if navigationCount := strings.Count(response.Body.String(), `<nav class="bottom-navigation"`); navigationCount != 1 {
+			assertFragmentsOrder(t, body, test.ordered)
+			if navigationCount := strings.Count(body, `<nav class="bottom-navigation"`); navigationCount != 1 {
 				t.Errorf("получено навигационных панелей: %d, ожидалась одна", navigationCount)
 			}
-			if activePageCount := strings.Count(response.Body.String(), `aria-current="page"`); activePageCount != 1 {
+			if activePageCount := strings.Count(body, `aria-current="page"`); activePageCount != 1 {
 				t.Errorf("получено активных разделов навигации: %d, ожидался один", activePageCount)
 			}
-			if strings.Contains(response.Body.String(), "<script") {
+			if strings.Contains(body, "<script") {
 				t.Error("страницы первой лабораторной не должны содержать JavaScript")
 			}
 		})
 	}
 }
 
-func TestLabOneHasExactlyThreeApplicationGetControllers(t *testing.T) {
-	server := newTestServer(t)
+func TestLabOneHasExactlyThreeRiscVCommandGetControllers(t *testing.T) {
+	server := newTestServer()
 	applicationRoutes := make(map[string]string)
-	for _, route := range server.router.Routes() {
-		if strings.HasPrefix(route.Path, "/static/") {
+	for _, registeredRoute := range server.router.Routes() {
+		if !strings.HasPrefix(registeredRoute.Path, "/riscv_commands/") {
 			continue
 		}
-		applicationRoutes[route.Path] = route.Method
+		applicationRoutes[registeredRoute.Path] = registeredRoute.Method
 	}
 
 	expectedRoutes := map[string]string{
-		"/":                  http.MethodGet,
-		"/instruction/draft": http.MethodGet,
-		"/instructions":      http.MethodGet,
+		"/riscv_commands/feed": http.MethodGet,
+		"/riscv_commands/add":  http.MethodGet,
+		"/riscv_commands/grid": http.MethodGet,
 	}
 	if len(applicationRoutes) != len(expectedRoutes) {
 		t.Fatalf("получены прикладные маршруты %v, ожидались %v", applicationRoutes, expectedRoutes)
@@ -93,8 +207,35 @@ func TestLabOneHasExactlyThreeApplicationGetControllers(t *testing.T) {
 	}
 }
 
+func TestRootRedirectsToFeed(t *testing.T) {
+	server := newTestServer()
+	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	response := httptest.NewRecorder()
+	server.router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusFound {
+		t.Fatalf("корневой маршрут вернул код %d, ожидался %d", response.Code, http.StatusFound)
+	}
+	if location := response.Header().Get("Location"); location != "/riscv_commands/feed" {
+		t.Errorf("корневой маршрут перенаправляет на %q, ожидался %q", location, "/riscv_commands/feed")
+	}
+}
+
+func TestOldApplicationRoutesAreNotServed(t *testing.T) {
+	server := newTestServer()
+	oldRoutes := []string{"/instruction/draft", "/instructions"}
+	for _, oldRoute := range oldRoutes {
+		request := httptest.NewRequest(http.MethodGet, oldRoute, nil)
+		response := httptest.NewRecorder()
+		server.router.ServeHTTP(response, request)
+		if response.Code != http.StatusNotFound {
+			t.Errorf("старый маршрут %s вернул код %d, ожидался %d", oldRoute, response.Code, http.StatusNotFound)
+		}
+	}
+}
+
 func TestStylesKeepNavigationInsideVerticalScreen(t *testing.T) {
-	server := newTestServer(t)
+	server := newTestServer()
 	request := httptest.NewRequest(http.MethodGet, "/static/styles/app.css", nil)
 	response := httptest.NewRecorder()
 	server.router.ServeHTTP(response, request)
@@ -120,24 +261,70 @@ func TestStylesKeepNavigationInsideVerticalScreen(t *testing.T) {
 	}
 }
 
-func newTestServer(t *testing.T) *Server {
-	t.Helper()
+func TestStylesAlignOperandRangeThumbsWithTrack(t *testing.T) {
+	server := newTestServer()
+	request := httptest.NewRequest(http.MethodGet, "/static/styles/app.css", nil)
+	response := httptest.NewRecorder()
+	server.router.ServeHTTP(response, request)
 
+	if response.Code != http.StatusOK {
+		t.Fatalf("получен код %d, ожидался %d", response.Code, http.StatusOK)
+	}
+
+	stylesheet := response.Body.String()
+	requiredFragments := []string{
+		".operand-range .form-range::-webkit-slider-thumb {",
+		"margin-top: 0",
+		".operand-range .form-range::-moz-range-thumb {",
+		".operand-range__dot {",
+		"top: 10px",
+	}
+	for _, fragment := range requiredFragments {
+		if !strings.Contains(stylesheet, fragment) {
+			t.Errorf("в стилях ползунка отсутствует %q", fragment)
+		}
+	}
+	if strings.Contains(stylesheet, "margin-top: -9px") {
+		t.Error("бегунки фильтра не должны смещаться выше дорожки")
+	}
+}
+
+func assertFragmentsOrder(t *testing.T, body string, fragments []string) {
+	t.Helper()
+	previousIndex := -1
+	for _, fragment := range fragments {
+		index := strings.Index(body, fragment)
+		if index == -1 {
+			t.Errorf("в ответе отсутствует %q", fragment)
+			return
+		}
+		if index <= previousIndex {
+			t.Errorf("фрагмент %q расположен в неверном порядке", fragment)
+			return
+		}
+		previousIndex = index
+	}
+}
+
+func TestMain(testingMain *testing.M) {
 	workingDirectory, err := os.Getwd()
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
 	backendDirectory := filepath.Clean(filepath.Join(workingDirectory, "..", ".."))
 	if err := os.Chdir(backendDirectory); err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	t.Cleanup(func() {
-		if err := os.Chdir(workingDirectory); err != nil {
-			t.Errorf("не удалось восстановить рабочий каталог: %v", err)
-		}
-	})
 
 	gin.SetMode(gin.TestMode)
+	exitCode := testingMain.Run()
+	if err := os.Chdir(workingDirectory); err != nil {
+		panic(err)
+	}
+	os.Exit(exitCode)
+}
+
+func newTestServer() *Server {
 	return NewServer()
 }

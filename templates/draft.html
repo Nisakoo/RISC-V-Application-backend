@@ -38,7 +38,10 @@
             <label class="form-label" for="instruction-operands">Количество операндов</label>
             <input class="form-control" id="instruction-operands" name="operand_count" type="number" min="0" max="3" value="{{ .Instruction.OperandCount }}">
           </div>
-          <button class="button primary-action add-action" type="button">Добавить в ленту</button>
+          <div class="form-field">
+            <label class="form-label" for="instruction-length">Длина команды, бит</label>
+            <input class="form-control" id="instruction-length" name="length_bits" type="number" min="16" max="64" step="16" value="{{ .Instruction.LengthBits }}">
+          </div>
         </form>
       </section>
     </main>
