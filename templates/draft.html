@@ -1,39 +1,49 @@
 {{ define "draft.html" }}
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Добавление команды · RISC-V</title>
-  <link rel="stylesheet" href="/static/styles/app.css">
-</head>
+{{ template "head" .Layout }}
 <body>
-  <main class="phone plain-page">
-    <section class="draft-content">
-      <h1>Добавление инструкции</h1>
-      <p class="page-subtitle">Заполните поля, чтобы добавить инструкцию</p>
-      <form class="draft-form">
-        <div class="media-row">
-          <label class="media-field" for="instruction-video">
-            <span class="media-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="m10 9 5 3-5 3Z"/></svg></span>
-            <strong>Видео</strong><small>MP4, MOV · до 500 МБ</small>
-          </label>
-          <input id="instruction-video" type="file" accept="video/mp4,video/quicktime" hidden>
-          <label class="media-field" for="instruction-image">
-            <span class="media-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="15.5" cy="9" r="1.5"/><path d="m6.5 17 4.5-5 3 3 2-2 2.5 4Z"/></svg></span>
-            <strong>Изображение</strong><small>PNG, JPG · до 20 МБ</small>
-          </label>
-          <input id="instruction-image" type="file" accept="image/png,image/jpeg" hidden>
-        </div>
-        <label class="form-field"><span>Инструкция</span><input value="{{ .Instruction.Mnemonic }}"></label>
-        <label class="form-field"><span>Описание</span><textarea rows="3">{{ .Instruction.Description }}</textarea></label>
-        <label class="form-field"><span>Тип инструкции</span><input value="{{ .Instruction.Format }}"></label>
-        <label class="form-field"><span>Количество операндов</span><input type="number" min="0" max="3" value="{{ .Instruction.OperandCount }}"></label>
-        <button class="button button-primary add-action" type="button">Добавить в ленту</button>
-      </form>
-    </section>
-    {{ template "navigation" . }}
-  </main>
+  <div class="phone">
+    <main class="page-view plain-page">
+      <section class="page-content add-page">
+        <h1>Добавление инструкции</h1>
+        <p class="page-subtitle">Заполните поля, чтобы добавить инструкцию</p>
+        <form aria-describedby="draft-mode-note">
+          <p class="visually-hidden" id="draft-mode-note">В первой лабораторной данные формы не сохраняются.</p>
+          <div class="media-fields">
+            <input class="visually-hidden media-input" id="instruction-video" name="instruction_video" type="file" accept="video/mp4,video/quicktime">
+            <label class="media-field" for="instruction-video">
+              <span class="media-field__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="m10 9 5 3-5 3Z"/></svg></span>
+              <strong>Видео</strong><small>MP4, MOV · до 500 МБ</small>
+            </label>
+            <input class="visually-hidden media-input" id="instruction-image" name="instruction_image" type="file" accept="image/png,image/jpeg">
+            <label class="media-field" for="instruction-image">
+              <span class="media-field__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="15.5" cy="9" r="1.5"/><path d="m6.5 17 4.5-5 3 3 2-2 2.5 4Z"/></svg></span>
+              <strong>Изображение</strong><small>PNG, JPG · до 20 МБ</small>
+            </label>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="instruction-mnemonic">Инструкция</label>
+            <input class="form-control" id="instruction-mnemonic" name="mnemonic" value="{{ .Instruction.Mnemonic }}">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="instruction-description">Описание</label>
+            <textarea class="form-control" id="instruction-description" name="description" rows="3">{{ .Instruction.Description }}</textarea>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="instruction-format">Тип инструкции</label>
+            <input class="form-control" id="instruction-format" name="format" value="{{ .Instruction.Format }}">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="instruction-operands">Количество операндов</label>
+            <input class="form-control" id="instruction-operands" name="operand_count" type="number" min="0" max="3" value="{{ .Instruction.OperandCount }}">
+          </div>
+          <button class="button primary-action add-action" type="button">Добавить в ленту</button>
+        </form>
+      </section>
+    </main>
+    {{ template "navigation" .Layout }}
+  </div>
 </body>
 </html>
 {{ end }}

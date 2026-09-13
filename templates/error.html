@@ -1,0 +1,16 @@
+{{ define "error.html" }}
+<!doctype html>
+<html lang="ru">
+{{ template "head" .Layout }}
+<body>
+  <div class="phone">
+    <main class="page-view {{ .PageClass }} status-page">
+      <h1>{{ .Heading }}</h1>
+      <p>{{ .Message }}</p>
+      <a class="button primary-action" href="{{ .ActionURL }}">{{ .ActionLabel }}</a>
+    </main>
+    {{ template "navigation" .Layout }}
+  </div>
+</body>
+</html>
+{{ end }}

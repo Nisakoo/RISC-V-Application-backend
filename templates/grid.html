@@ -1,47 +1,49 @@
 {{ define "grid.html" }}
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Команды · RISC-V</title>
-  <link rel="stylesheet" href="/static/styles/app.css">
-</head>
+{{ template "head" .Layout }}
 <body>
-  <main class="phone plain-page">
-    <section class="grid-content">
-      <h1>Команды</h1>
-      <form class="operand-filter" method="get" action="/instructions">
-        <label>Количество операндов</label>
-        <div class="filter-controls">
-          <div class="range-control">
-            <div class="operand-range" style="--range-start: {{ .RangeStart }}%; --range-end: {{ .RangeEnd }}%;">
-              <input class="range-input" aria-label="Минимальное количество операндов" name="min_operands" type="range" min="0" max="3" value="{{ .MinimumOperandCount }}">
-              <input class="range-input" aria-label="Максимальное количество операндов" name="max_operands" type="range" min="0" max="3" value="{{ .MaximumOperandCount }}">
-              <span class="operand-range-track"></span>
-              <span class="operand-range-dot operand-range-dot-0{{ if eq .MinimumOperandCount 0 }} active{{ end }}"></span>
-              <span class="operand-range-dot operand-range-dot-1{{ if and (le .MinimumOperandCount 1) (ge .MaximumOperandCount 1) }} active{{ end }}"></span>
-              <span class="operand-range-dot operand-range-dot-2{{ if and (le .MinimumOperandCount 2) (ge .MaximumOperandCount 2) }} active{{ end }}"></span>
-              <span class="operand-range-dot operand-range-dot-3{{ if eq .MaximumOperandCount 3 }} active{{ end }}"></span>
+  <div class="phone">
+    <main class="page-view plain-page">
+      <section class="page-content instructions-page">
+        <h1>Команды</h1>
+        <form class="operand-filter" method="get" action="/instructions">
+          <fieldset class="operand-filter__fields">
+            <legend class="form-label">Количество операндов</legend>
+            <div class="filter-controls">
+              <div class="range-control">
+                <div class="operand-range" style="--range-start: {{ .RangeStart }}%; --range-end: {{ .RangeEnd }}%;">
+                  <input class="form-range" aria-label="Минимальное количество операндов" name="min_operands" type="range" min="0" max="3" value="{{ .MinimumOperandCount }}">
+                  <input class="form-range" aria-label="Максимальное количество операндов" name="max_operands" type="range" min="0" max="3" value="{{ .MaximumOperandCount }}">
+                  <span class="operand-range__track"></span>
+                  <span class="operand-range__dot operand-range__dot--0{{ if eq .MinimumOperandCount 0 }} active{{ end }}"></span>
+                  <span class="operand-range__dot operand-range__dot--1{{ if and (le .MinimumOperandCount 1) (ge .MaximumOperandCount 1) }} active{{ end }}"></span>
+                  <span class="operand-range__dot operand-range__dot--2{{ if and (le .MinimumOperandCount 2) (ge .MaximumOperandCount 2) }} active{{ end }}"></span>
+                  <span class="operand-range__dot operand-range__dot--3{{ if eq .MaximumOperandCount 3 }} active{{ end }}"></span>
+                </div>
+                <div class="range-labels"><span>0</span><span>1</span><span>2</span><span>3</span></div>
+              </div>
+              <button class="operand-filter__submit" type="submit">Показать</button>
             </div>
-            <div class="range-labels"><span>0</span><span>1</span><span>2</span><span>3</span></div>
-          </div>
-          <button type="submit">Показать</button>
+          </fieldset>
+        </form>
+        <div class="instruction-grid">
+          {{ range .Instructions }}
+          <article class="instruction-card">
+            <a href="/?id={{ .ID }}"><img class="instruction-card__image" src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}" loading="lazy" decoding="async"></a>
+            <div class="card-body">
+              <h2 class="card-title">{{ .Mnemonic }}</h2>
+              <div class="instruction-card__meta"><span class="badge">{{ .Format }} · {{ .OperandCount }}</span><span aria-label="{{ .LikeCount }} отметок нравится">♡ {{ .LikeCount }}</span></div>
+            </div>
+          </article>
+          {{ else }}
+          <p class="instruction-empty">Для выбранного диапазона команд нет.</p>
+          {{ end }}
         </div>
-      </form>
-      <div class="instruction-grid">
-        {{ range .Instructions }}
-        <article class="instruction-card" data-video-url="{{ .VideoURL }}">
-          <a href="/?id={{ .ID }}"><img src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}"></a>
-          <div class="card-body"><h2>{{ .Mnemonic }}</h2><div class="card-meta"><span class="instruction-badge">{{ .Format }} · {{ .OperandCount }}</span><span class="card-like">♡ {{ .LikeCount }}</span></div></div>
-        </article>
-        {{ else }}
-        <p class="empty-state">Команд с выбранным количеством операндов нет.</p>
-        {{ end }}
-      </div>
-    </section>
-    {{ template "navigation" . }}
-  </main>
+      </section>
+    </main>
+    {{ template "navigation" .Layout }}
+  </div>
 </body>
 </html>
 {{ end }}
