@@ -23,6 +23,7 @@ func NewInstructionRepository() *InstructionRepository {
 			Description:     "Складывает значения исходных регистров rs1 и rs2, затем сохраняет сумму в целевой регистр rd. Команда не обращается к памяти и применяется для базовых арифметических вычислений над целыми числами.",
 			Format:          domain.InstructionFormatR,
 			OperandCount:    3,
+			LengthBits:      32,
 			ImageURL:        mediaBaseURL + "/images/ADD.png",
 			VideoURL:        mediaBaseURL + "/video/ADD.mp4",
 			Status:          domain.InstructionDraft,
@@ -35,6 +36,7 @@ func NewInstructionRepository() *InstructionRepository {
 			Description:     "Вычитает значение исходного регистра rs2 из значения регистра rs1 и записывает полученную разность в rd. Результат вычисляется в пределах разрядности регистра текущей архитектуры RISC-V.",
 			Format:          domain.InstructionFormatR,
 			OperandCount:    3,
+			LengthBits:      32,
 			ImageURL:        mediaBaseURL + "/images/SUB.png",
 			VideoURL:        mediaBaseURL + "/video/SUB.mp4",
 			Status:          domain.InstructionPublished,
@@ -47,6 +49,7 @@ func NewInstructionRepository() *InstructionRepository {
 			Description:     "Складывает значение регистра rs1 со знаково расширенным непосредственным значением immediate и сохраняет результат в rd. Команда удобна для изменения счётчиков, адресов и небольших целых значений.",
 			Format:          domain.InstructionFormatI,
 			OperandCount:    3,
+			LengthBits:      32,
 			ImageURL:        mediaBaseURL + "/images/ADDI.png",
 			VideoURL:        mediaBaseURL + "/video/ADDI.mp4",
 			Status:          domain.InstructionPublished,
@@ -59,6 +62,7 @@ func NewInstructionRepository() *InstructionRepository {
 			Description:     "Сравнивает значения регистров rs1 и rs2. Если они равны, выполнение продолжается по адресу PC плюс заданное смещение; иначе процессор переходит к следующей последовательной команде.",
 			Format:          domain.InstructionFormatB,
 			OperandCount:    3,
+			LengthBits:      32,
 			ImageURL:        mediaBaseURL + "/images/BEQ.png",
 			VideoURL:        mediaBaseURL + "/video/BEQ.mp4",
 			Status:          domain.InstructionPublished,
@@ -71,6 +75,7 @@ func NewInstructionRepository() *InstructionRepository {
 			Description:     "Помещает двадцатибитное непосредственное значение в старшие разряды целевого регистра rd, заполняя младшие двенадцать разрядов нулями. Используется для формирования больших констант и адресов.",
 			Format:          domain.InstructionFormatU,
 			OperandCount:    2,
+			LengthBits:      32,
 			ImageURL:        mediaBaseURL + "/images/LUI.png",
 			VideoURL:        mediaBaseURL + "/video/LUI.mp4",
 			Status:          domain.InstructionPublished,
@@ -83,6 +88,7 @@ func NewInstructionRepository() *InstructionRepository {
 			Description:     "Выполняет безусловный переход по адресу PC плюс знаковое смещение и сохраняет адрес следующей команды PC + 4 в регистре rd. Применяется для вызова функций и переходов с возможностью возврата.",
 			Format:          domain.InstructionFormatJ,
 			OperandCount:    2,
+			LengthBits:      32,
 			ImageURL:        mediaBaseURL + "/images/JAL.png",
 			VideoURL:        mediaBaseURL + "/video/JAL.mp4",
 			Status:          domain.InstructionPublished,
@@ -95,6 +101,7 @@ func NewInstructionRepository() *InstructionRepository {
 			Description:     "Выполняет побитовое логическое И над значениями исходных регистров rs1 и rs2, записывая результат в rd. Каждый бит результата равен единице только тогда, когда оба соответствующих входных бита равны единице.",
 			Format:          domain.InstructionFormatR,
 			OperandCount:    3,
+			LengthBits:      32,
 			ImageURL:        mediaBaseURL + "/images/default.svg",
 			VideoURL:        mediaBaseURL + "/video/ADD.mp4",
 			Status:          domain.InstructionDeleted,
@@ -139,6 +146,7 @@ func (repository *InstructionRepository) GetVisible(minimumOperandCount int, max
 }
 
 func (repository *InstructionRepository) GetNextVisible(id int) (domain.Instruction, error) {
+	// Для ЛР1 порядок ленты задаётся положением команды в in-memory коллекции.
 	visible := repository.GetVisible(0, 3)
 	for index, instruction := range visible {
 		if instruction.ID == id {

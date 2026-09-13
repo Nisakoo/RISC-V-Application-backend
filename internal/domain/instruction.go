@@ -26,6 +26,7 @@ type Instruction struct {
 	Description     string
 	Format          InstructionFormat
 	OperandCount    int
+	LengthBits      int
 	ImageURL        string
 	VideoURL        string
 	Status          InstructionStatus

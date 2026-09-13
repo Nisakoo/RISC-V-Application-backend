@@ -12,6 +12,7 @@ type InstructionRepository interface {
 	GetByID(id int) (domain.Instruction, error)
 	GetDraft() (domain.Instruction, error)
 	GetVisible(minimumOperandCount int, maximumOperandCount int) []domain.Instruction
+	// GetNextVisible сохраняет порядок ленты независимо от способа хранения команд.
 	GetNextVisible(id int) (domain.Instruction, error)
 }
 

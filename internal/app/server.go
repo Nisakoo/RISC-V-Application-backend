@@ -10,6 +10,7 @@ import (
 
 	"riscv-lab/internal/handler"
 	"riscv-lab/internal/repository"
+	"riscv-lab/internal/route"
 	"riscv-lab/internal/service"
 )
 
@@ -26,9 +27,12 @@ func NewServer() *Server {
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "resources")
 
-	router.GET("/", handler.Feed)
-	router.GET("/instruction/draft", handler.Draft)
-	router.GET("/instructions", handler.Grid)
+	router.GET(route.Root, func(context *gin.Context) {
+		context.Redirect(http.StatusFound, route.Feed)
+	})
+	router.GET(route.Feed, handler.Feed)
+	router.GET(route.Add, handler.Draft)
+	router.GET(route.Grid, handler.Grid)
 
 	return &Server{router: router}
 }

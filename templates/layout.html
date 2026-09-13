@@ -3,22 +3,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{{ .Title }}</title>
-  <link rel="stylesheet" href="/static/styles/app.css">
+  <link rel="stylesheet" href="/static/styles/app.css?v=5">
 </head>
 {{ end }}
 
 {{ define "navigation" }}
 <nav class="bottom-navigation" aria-label="Основная навигация">
   <div class="bottom-navigation__container">
-    <a class="bottom-navigation__link{{ if eq .ActivePage "feed" }} active{{ end }}" href="/"{{ if eq .ActivePage "feed" }} aria-current="page"{{ end }}>
+    <a class="bottom-navigation__link{{ if eq .ActivePage "feed" }} active{{ end }}" href="{{ .FeedURL }}"{{ if eq .ActivePage "feed" }} aria-current="page"{{ end }}>
       <svg class="bottom-navigation__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h14"/></svg>
       <span>Лента</span>
     </a>
-    <a class="bottom-navigation__link{{ if eq .ActivePage "draft" }} active{{ end }}" href="/instruction/draft"{{ if eq .ActivePage "draft" }} aria-current="page"{{ end }}>
+    <a class="bottom-navigation__link{{ if eq .ActivePage "draft" }} active{{ end }}" href="{{ .AddURL }}"{{ if eq .ActivePage "draft" }} aria-current="page"{{ end }}>
       <svg class="bottom-navigation__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       <span>Добавить</span>
     </a>
-    <a class="bottom-navigation__link{{ if eq .ActivePage "grid" }} active{{ end }}" href="/instructions"{{ if eq .ActivePage "grid" }} aria-current="page"{{ end }}>
+    <a class="bottom-navigation__link{{ if eq .ActivePage "grid" }} active{{ end }}" href="{{ .GridURL }}"{{ if eq .ActivePage "grid" }} aria-current="page"{{ end }}>
       <svg class="bottom-navigation__icon bottom-navigation__icon--grid" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
       <span>Плитка</span>
     </a>

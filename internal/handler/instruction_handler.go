@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"riscv-lab/internal/domain"
+	"riscv-lab/internal/route"
 	"riscv-lab/internal/service"
 )
 
@@ -25,7 +26,7 @@ func (handler *InstructionHandler) Feed(context *gin.Context) {
 		parsedID, conversionError := strconv.Atoi(idParameter)
 		if conversionError != nil {
 			renderError(context, http.StatusBadRequest, newErrorPageView(
-				"Некорректный идентификатор", "Некорректный идентификатор команды.", activePageFeed, pageClassFeed, "/", "Открыть ленту",
+				"Некорректный идентификатор", "Некорректный идентификатор команды.", activePageFeed, pageClassFeed, route.Feed, "Открыть ленту",
 			))
 			return
 		}
@@ -39,15 +40,15 @@ func (handler *InstructionHandler) Feed(context *gin.Context) {
 			message = "В ленте пока нет доступных команд."
 		}
 		renderError(context, http.StatusNotFound, newErrorPageView(
-			"Команда не найдена", message, activePageFeed, pageClassFeed, "/", "Открыть ленту",
+			"Команда не найдена", message, activePageFeed, pageClassFeed, route.Feed, "Открыть ленту",
 		))
 		return
 	}
 
 	context.HTML(http.StatusOK, "feed.html", feedPageView{
-		Layout:            newLayoutView(instruction.Mnemonic+" · RISC-V", activePageFeed),
-		Instruction:       toInstructionView(instruction),
-		NextInstructionID: nextInstruction.ID,
+		Layout:             newLayoutView(instruction.Mnemonic+" · RISC-V", activePageFeed),
+		Instruction:        toInstructionView(instruction),
+		NextInstructionURL: route.Feed + "?id=" + strconv.Itoa(nextInstruction.ID),
 	})
 }
 
@@ -55,7 +56,7 @@ func (handler *InstructionHandler) Draft(context *gin.Context) {
 	instruction, err := handler.service.GetDraft()
 	if err != nil {
 		renderError(context, http.StatusNotFound, newErrorPageView(
-			"Черновик не найден", "Черновик инструкции не найден.", activePageDraft, pageClassPlain, "/instructions", "Открыть инструкции",
+			"Черновик не найден", "Черновик инструкции не найден.", activePageDraft, pageClassPlain, route.Grid, "Открыть команды",
 		))
 		return
 	}
@@ -108,6 +109,7 @@ func toInstructionView(instruction domain.Instruction) instructionView {
 		Description:     instruction.Description,
 		Format:          instruction.Format,
 		OperandCount:    instruction.OperandCount,
+		LengthBits:      instruction.LengthBits,
 		ImageURL:        imageURL,
 		VideoURL:        instruction.VideoURL,
 		LikeCount:       len(instruction.LikedUserIDs),

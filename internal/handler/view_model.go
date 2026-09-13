@@ -1,6 +1,9 @@
 package handler
 
-import "riscv-lab/internal/domain"
+import (
+	"riscv-lab/internal/domain"
+	"riscv-lab/internal/route"
+)
 
 type activePage string
 type pageClass string
@@ -16,6 +19,9 @@ const (
 type layoutView struct {
 	Title      string
 	ActivePage activePage
+	FeedURL    string
+	AddURL     string
+	GridURL    string
 }
 
 type instructionView struct {
@@ -25,15 +31,16 @@ type instructionView struct {
 	Description     string
 	Format          domain.InstructionFormat
 	OperandCount    int
+	LengthBits      int
 	ImageURL        string
 	VideoURL        string
 	LikeCount       int
 }
 
 type feedPageView struct {
-	Layout            layoutView
-	Instruction       instructionView
-	NextInstructionID int
+	Layout             layoutView
+	Instruction        instructionView
+	NextInstructionURL string
 }
 
 type draftPageView struct {
@@ -74,5 +81,8 @@ func newLayoutView(title string, activePage activePage) layoutView {
 	return layoutView{
 		Title:      title,
 		ActivePage: activePage,
+		FeedURL:    route.Feed,
+		AddURL:     route.Add,
+		GridURL:    route.Grid,
 	}
 }
