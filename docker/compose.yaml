@@ -21,7 +21,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
     volumes:
-      - ../../assets:/assets:ro
+      - ../assets:/assets:ro
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |

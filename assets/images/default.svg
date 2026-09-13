@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-labelledby="title description">
+  <title id="title">Изображение команды RISC-V</title>
+  <desc id="description">Заглушка для команды без изображения</desc>
+  <rect width="640" height="480" fill="#f3f3f4"/>
+  <rect x="150" y="100" width="340" height="280" rx="28" fill="#ffffff" stroke="#20233f" stroke-width="8"/>
+  <circle cx="320" cy="210" r="58" fill="#f3bf4f"/>
+  <path d="M292 210h56M320 182v56" stroke="#20233f" stroke-width="12" stroke-linecap="round"/>
+  <text x="320" y="315" fill="#20233f" font-family="Arial, sans-serif" font-size="42" font-weight="700" text-anchor="middle">RISC-V</text>
+  <text x="320" y="350" fill="#9c9eac" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">INSTRUCTION</text>
+</svg>
