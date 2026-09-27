@@ -1,0 +1,36 @@
+# Веб-сервис лабораторной работы №3
+
+Запуск из корня проекта: `make lab3-run`. Команда поднимает PostgreSQL и MinIO, применяет миграции и запускает Go-сервер на `http://localhost:8080`.
+
+Все методы возвращают JSON. Успешный ответ содержит `status: "success"`, ошибочный — `status: "fail"` и понятное `message`. До лабораторной работы №4 пользователь определяется функцией `CurrentUserID` и имеет идентификатор `1`.
+
+## Методы
+
+| Метод | URL | Данные запроса | Результат |
+| --- | --- | --- | --- |
+| GET | `/api/riscv_commands` | `min_operands`, `max_operands` (0–3) | Опубликованные команды, `is_creator` 0/1 |
+| GET | `/api/riscv_commands/feed` | `id` (необязательно), `next=true` вместе с `id` | Опубликованная команда и `next_id` |
+| GET | `/api/riscv_commands/draft` | Без идентификатора | Черновик текущего пользователя |
+| POST | `/api/riscv_commands` | `multipart/form-data`: `mnemonic`, файлы `image`, `video` | Созданный черновик, 201 |
+| PUT | `/api/riscv_commands/{id}/publish` | JSON: `description`, `operand_count`, `length_bits` | Опубликованная команда |
+| DELETE | `/api/riscv_commands/{id}` | Без тела | Логическое удаление своей команды |
+| POST | `/api/riscv_commands/{id}/like` | JSON: `{"like": 0}` или `{"like": 1}` | Текущее число лайков |
+| POST | `/api/users` | JSON: `login`, `password` | Новый пользователь без пароля, 201 |
+| POST | `/api/users/authentication` | Заглушка ЛР4 | Сообщение о следующем этапе |
+| POST | `/api/users/logout` | Заглушка ЛР4 | Сообщение о следующем этапе |
+
+Некорректные параметры дают 400, отсутствующая или недоступная команда — 404, уже существующий черновик или логин — 409, ошибка сервера — 500. Удалённые команды не включаются в список и ленту. Изменение системных полей в запросах запрещено. Формы загрузки принимают PNG, JPEG или WebP до 5 МиБ и MP4 до 50 МиБ; файлы сохраняются в MinIO под новыми латинскими именами.
+
+## Таблицы PostgreSQL
+
+- `users`: `id` (PK, bigint), `login` (varchar(64), unique), `password_hash` (varchar(255)), `role` (varchar(16): `user` или `moderator`).
+- `riscv_commands`: `id` (PK, bigint), `mnemonic` (varchar(16)), `description` (varchar(1000), nullable для черновика), `operand_count` (smallint, nullable для черновика), `length_bits` (smallint, nullable для черновика), `image_key` и `video_key` (varchar(255), nullable), `status` (varchar(16): `draft`, `published`, `deleted`), `created_at` и `published_at` (timestamptz), `creator_id` (FK на `users.id`). Ограничение допускает не больше одного черновика на пользователя.
+- `riscv_command_likes`: `id` (PK, bigint), `user_id` (FK на `users.id`), `riscv_command_id` (FK на `riscv_commands.id`), уникальная пара пользователя и команды.
+
+Внешние ключи запрещают каскадное удаление. Изображение и видео хранятся в MinIO; в PostgreSQL находятся только ключи объектов. Для пустого или недоступного объекта SSR отдаёт локальный файл по умолчанию.
+
+## Проверка
+
+Импортируйте `docs/lab3-postman.json` в Postman. Задайте `base_url`, пути к PNG и MP4 в запросе создания, затем выполните запросы в порядке сценария. Проверьте через Adminer изменение статуса команды, ключи объектов и строки лайков; в MinIO проверьте загруженные файлы. Ошибочные запросы с неправильным `id`, повторным черновиком, недопустимым значением `like` и попыткой передать системные поля должны возвращать JSON с кодом 400, 404 или 409 по ситуации.
+
+Для Bruno откройте **Import Collection** и выберите `docs/lab3-bruno-import.json` как коллекцию Postman v2.1. После импорта задайте переменные `image_path`, `video_path` и `registration_password`; `command_id` заполняется ответом на создание или получение черновика. В запросе «06 Следующая команда» исходный идентификатор задаётся отдельно переменной коллекции `feed_command_id` (по умолчанию `1`), чтобы его можно было менять вручную независимо от `command_id`. Например, для `feed_command_id=4` ответом будет команда с `id=9`, если обе команды опубликованы. Если черновик уже создан, начните с запроса «03 Получить черновик».
