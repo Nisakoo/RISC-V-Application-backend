@@ -1,10 +1,7 @@
 package app
 
 import (
-	"bytes"
 	"context"
-	"io"
-	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -67,11 +64,11 @@ func (fake *applicationRepository) GetNextVisible(_ context.Context, id int64) (
 	return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
 }
 
-func (fake *applicationRepository) CreateDraft(_ context.Context, creatorID int64, input domain.CreateRiscVCommandDraft, imageKey string, videoKey string) (domain.RiscVCommand, error) {
+func (fake *applicationRepository) CreateDraft(_ context.Context, creatorID int64, input domain.CreateRiscVCommandDraft) (domain.RiscVCommand, error) {
 	if fake.draft != nil {
 		return domain.RiscVCommand{}, repository.ErrDraftAlreadyExists
 	}
-	command := domain.RiscVCommand{ID: 100, Mnemonic: input.Mnemonic, ImageKey: imageKey, VideoKey: videoKey, Status: domain.RiscVCommandDraft, CreatorID: creatorID, LengthBits: 32}
+	command := domain.RiscVCommand{ID: 100, Mnemonic: input.Mnemonic, Status: domain.RiscVCommandDraft, CreatorID: creatorID, LengthBits: 32}
 	fake.draft = &command
 	return command, nil
 }
@@ -81,9 +78,7 @@ func (fake *applicationRepository) PublishDraft(_ context.Context, id int64, _ i
 		return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
 	}
 	command := *fake.draft
-	command.AssemblyExample = input.AssemblyExample
 	command.Description = input.Description
-	command.Format = input.Format
 	command.OperandCount = input.OperandCount
 	command.LengthBits = input.LengthBits
 	command.Status = domain.RiscVCommandPublished
@@ -104,18 +99,16 @@ func (fake *applicationRepository) SoftDelete(_ context.Context, id int64) error
 
 type applicationMedia struct{}
 
-func (applicationMedia) Put(_ context.Context, directory string, extension string, _ string, reader io.Reader, _ int64) (string, error) {
-	if _, err := io.Copy(io.Discard, reader); err != nil {
-		return "", err
+func (applicationMedia) ImageURL(_ context.Context, key string) string {
+	if key == "" {
+		return "/defaults/image.svg"
 	}
-	return directory + "/uploaded" + extension, nil
+	return "http://localhost:9000/riscv-assets/" + key
 }
 
-func (applicationMedia) Remove(_ context.Context, _ string) error { return nil }
-
-func (applicationMedia) URL(key string) string {
+func (applicationMedia) VideoURL(_ context.Context, key string) string {
 	if key == "" {
-		return "http://localhost:9000/riscv-assets/images/default.svg"
+		return "/defaults/video.mp4"
 	}
 	return "http://localhost:9000/riscv-assets/" + key
 }
@@ -151,7 +144,7 @@ func TestLabTwoPagesReadRiscVCommands(t *testing.T) {
 		{url: "/riscv_commands/feed", contains: []string{"<title>ADD · RISC-V</title>", "href=\"/riscv_commands/feed?id=4\"", ">4</small>"}},
 		{url: "/riscv_commands/feed?id=4", contains: []string{"<title>SUB · RISC-V</title>", "href=\"/riscv_commands/feed?id=23\""}},
 		{url: "/riscv_commands/grid?min_operands=2&max_operands=2", contains: []string{"<h2 class=\"card-title\">LUI</h2>", "action=\"/riscv_commands/delete\""}},
-		{url: "/riscv_commands/add", contains: []string{"Создайте черновик команды RISC-V", "enctype=\"multipart/form-data\"", ">Далее</button>"}},
+		{url: "/riscv_commands/add", contains: []string{"Создайте черновик команды RISC-V", "type=\"file\"", "В ЛР2 файл не отправляется", ">Далее</button>"}},
 	}
 	for _, test := range tests {
 		request := httptest.NewRequest(http.MethodGet, test.url, nil)
@@ -168,34 +161,37 @@ func TestLabTwoPagesReadRiscVCommands(t *testing.T) {
 		if strings.Contains(response.Body.String(), "<script") {
 			t.Errorf("страница %s содержит JavaScript", test.url)
 		}
+		if test.url == "/riscv_commands/add" && (strings.Contains(response.Body.String(), "multipart/form-data") || strings.Contains(response.Body.String(), "name=\"riscv_command_image\"") || strings.Contains(response.Body.String(), "name=\"riscv_command_video\"")) {
+			t.Errorf("страница добавления отправляет новые медиафайлы на сервер")
+		}
 	}
 }
 
 func TestLabTwoCreateAndPublishFlow(t *testing.T) {
 	server, fakeRepository := newTestServer()
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	_ = writer.WriteField("mnemonic", "xor")
-	writeMultipartFile(t, writer, "riscv_command_image", "xor.png", []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"))
-	writeMultipartFile(t, writer, "riscv_command_video", "xor.mp4", []byte("\x00\x00\x00\x14ftypmp42\x00\x00\x00\x00mp42"))
-	if err := writer.Close(); err != nil {
-		t.Fatal(err)
-	}
-
-	request := httptest.NewRequest(http.MethodPost, "/riscv_commands/add", body)
-	request.Header.Set("Content-Type", writer.FormDataContentType())
+	createForm := url.Values{"mnemonic": {"xor"}}
+	request := httptest.NewRequest(http.MethodPost, "/riscv_commands/add", strings.NewReader(createForm.Encode()))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	response := httptest.NewRecorder()
 	server.router.ServeHTTP(response, request)
 	if response.Code != http.StatusSeeOther || fakeRepository.draft == nil || fakeRepository.draft.Mnemonic != "XOR" {
 		t.Fatalf("черновик не создан: код %d, черновик %+v", response.Code, fakeRepository.draft)
 	}
+	if fakeRepository.draft.ImageKey != "" || fakeRepository.draft.VideoKey != "" {
+		t.Fatalf("для нового черновика сохранены ключи медиа: %+v", fakeRepository.draft)
+	}
+
+	request = httptest.NewRequest(http.MethodGet, "/riscv_commands/add", nil)
+	response = httptest.NewRecorder()
+	server.router.ServeHTTP(response, request)
+	if !strings.Contains(response.Body.String(), "src=\"/defaults/image.svg\"") || !strings.Contains(response.Body.String(), "src=\"/defaults/video.mp4\"") {
+		t.Fatalf("в HTML черновика отсутствуют локальные медиа по умолчанию: %s", response.Body.String())
+	}
 
 	publishForm := url.Values{
-		"assembly_example": {"xor x3, x1, x2"},
-		"description":      {"Выполняет побитовое исключающее ИЛИ для двух регистров."},
-		"format":           {"R"},
-		"operand_count":    {"3"},
-		"length_bits":      {"32"},
+		"description":   {"Выполняет побитовое исключающее ИЛИ для двух регистров."},
+		"operand_count": {"3"},
+		"length_bits":   {"32"},
 	}
 	request = httptest.NewRequest(http.MethodPost, "/riscv_commands/publish", strings.NewReader(publishForm.Encode()))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -237,26 +233,34 @@ func TestRootRedirectsToRiscVCommandFeed(t *testing.T) {
 	}
 }
 
-func writeMultipartFile(t *testing.T, writer *multipart.Writer, field string, name string, contents []byte) {
-	t.Helper()
-	part, err := writer.CreateFormFile(field, name)
-	if err != nil {
-		t.Fatal(err)
+func TestSSRServerReturnsDefaultImageAndVideo(t *testing.T) {
+	server, _ := newTestServer()
+	tests := []struct {
+		url         string
+		contentType string
+	}{
+		{url: "/defaults/image.svg", contentType: "image/svg+xml"},
+		{url: "/defaults/video.mp4", contentType: "video/mp4"},
 	}
-	if _, err := part.Write(contents); err != nil {
-		t.Fatal(err)
+	for _, test := range tests {
+		request := httptest.NewRequest(http.MethodGet, test.url, nil)
+		response := httptest.NewRecorder()
+		server.router.ServeHTTP(response, request)
+		if response.Code != http.StatusOK || !strings.HasPrefix(response.Header().Get("Content-Type"), test.contentType) {
+			t.Errorf("%s вернул код %d и Content-Type %q", test.url, response.Code, response.Header().Get("Content-Type"))
+		}
 	}
 }
 
 func newTestServer() (*Server, *applicationRepository) {
 	commands := []domain.RiscVCommand{
-		{ID: 1, Mnemonic: "ADD", Description: "Складывает значения исходных регистров.", Format: domain.InstructionFormatR, OperandCount: 3, LengthBits: 32, ImageKey: "images/ADD.png", VideoKey: "video/ADD.mp4", Status: domain.RiscVCommandPublished, LikeCount: 4},
-		{ID: 4, Mnemonic: "SUB", Description: "Вычитает значение второго регистра.", Format: domain.InstructionFormatR, OperandCount: 3, LengthBits: 32, ImageKey: "images/SUB.png", VideoKey: "video/SUB.mp4", Status: domain.RiscVCommandPublished, LikeCount: 3},
-		{ID: 23, Mnemonic: "LUI", Description: "Загружает верхнее immediate.", Format: domain.InstructionFormatU, OperandCount: 2, LengthBits: 32, ImageKey: "images/LUI.png", VideoKey: "video/LUI.mp4", Status: domain.RiscVCommandPublished, LikeCount: 2},
+		{ID: 1, Mnemonic: "ADD", Description: "Складывает значения исходных регистров.", OperandCount: 3, LengthBits: 32, ImageKey: "images/ADD.png", VideoKey: "video/ADD.mp4", Status: domain.RiscVCommandPublished, LikeCount: 4},
+		{ID: 4, Mnemonic: "SUB", Description: "Вычитает значение второго регистра.", OperandCount: 3, LengthBits: 32, ImageKey: "images/SUB.png", VideoKey: "video/SUB.mp4", Status: domain.RiscVCommandPublished, LikeCount: 3},
+		{ID: 23, Mnemonic: "LUI", Description: "Загружает верхнее immediate.", OperandCount: 2, LengthBits: 32, ImageKey: "images/LUI.png", VideoKey: "video/LUI.mp4", Status: domain.RiscVCommandPublished, LikeCount: 2},
 	}
 	fakeRepository := &applicationRepository{commands: commands}
 	media := applicationMedia{}
-	riscvCommandService := service.NewRiscVCommandService(fakeRepository, media)
+	riscvCommandService := service.NewRiscVCommandService(fakeRepository)
 	riscvCommandHandler := handler.NewRiscVCommandHandler(riscvCommandService, media)
 	return NewServer(":0", riscvCommandHandler), fakeRepository
 }

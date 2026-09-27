@@ -1,11 +1,8 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"testing"
 
 	"riscv-lab/internal/domain"
@@ -58,11 +55,11 @@ func (fake *fakeRiscVCommandRepository) GetNextVisible(_ context.Context, id int
 	return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
 }
 
-func (fake *fakeRiscVCommandRepository) CreateDraft(_ context.Context, creatorID int64, input domain.CreateRiscVCommandDraft, imageKey string, videoKey string) (domain.RiscVCommand, error) {
+func (fake *fakeRiscVCommandRepository) CreateDraft(_ context.Context, creatorID int64, input domain.CreateRiscVCommandDraft) (domain.RiscVCommand, error) {
 	if fake.draft != nil {
 		return domain.RiscVCommand{}, repository.ErrDraftAlreadyExists
 	}
-	command := domain.RiscVCommand{ID: 101, Mnemonic: input.Mnemonic, ImageKey: imageKey, VideoKey: videoKey, Status: domain.RiscVCommandDraft, CreatorID: creatorID}
+	command := domain.RiscVCommand{ID: 101, Mnemonic: input.Mnemonic, Status: domain.RiscVCommandDraft, CreatorID: creatorID, LengthBits: 0}
 	fake.draft = &command
 	fake.commands = append(fake.commands, command)
 	return command, nil
@@ -73,9 +70,7 @@ func (fake *fakeRiscVCommandRepository) PublishDraft(_ context.Context, id int64
 		return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
 	}
 	command := *fake.draft
-	command.AssemblyExample = input.AssemblyExample
 	command.Description = input.Description
-	command.Format = input.Format
 	command.OperandCount = input.OperandCount
 	command.LengthBits = input.LengthBits
 	command.Status = domain.RiscVCommandPublished
@@ -91,27 +86,9 @@ func (fake *fakeRiscVCommandRepository) SoftDelete(_ context.Context, id int64) 
 	return nil
 }
 
-type fakeMediaStorage struct {
-	putDirectories []string
-	removedKeys    []string
-}
-
-func (fake *fakeMediaStorage) Put(_ context.Context, directory string, extension string, _ string, reader io.Reader, _ int64) (string, error) {
-	if _, err := io.Copy(io.Discard, reader); err != nil {
-		return "", err
-	}
-	fake.putDirectories = append(fake.putDirectories, directory)
-	return fmt.Sprintf("%s/generated%s", directory, extension), nil
-}
-
-func (fake *fakeMediaStorage) Remove(_ context.Context, key string) error {
-	fake.removedKeys = append(fake.removedKeys, key)
-	return nil
-}
-
 func TestRiscVCommandServiceFeedAndRange(t *testing.T) {
 	fakeRepository := &fakeRiscVCommandRepository{commands: sampleCommands()}
-	service := NewRiscVCommandService(fakeRepository, &fakeMediaStorage{})
+	service := NewRiscVCommandService(fakeRepository)
 
 	first, next, err := service.GetFeedRiscVCommand(context.Background(), nil)
 	if err != nil {
@@ -132,7 +109,7 @@ func TestRiscVCommandServiceFeedAndRange(t *testing.T) {
 
 func TestRiscVCommandServiceRejectsDeletedCommand(t *testing.T) {
 	fakeRepository := &fakeRiscVCommandRepository{commands: sampleCommands()}
-	service := NewRiscVCommandService(fakeRepository, &fakeMediaStorage{})
+	service := NewRiscVCommandService(fakeRepository)
 	id := int64(77)
 	_, _, err := service.GetFeedRiscVCommand(context.Background(), &id)
 	if !errors.Is(err, ErrRiscVCommandNotFound) {
@@ -142,53 +119,41 @@ func TestRiscVCommandServiceRejectsDeletedCommand(t *testing.T) {
 
 func TestRiscVCommandServiceCreatesAndPublishesDraft(t *testing.T) {
 	fakeRepository := &fakeRiscVCommandRepository{commands: sampleCommands()}
-	fakeMedia := &fakeMediaStorage{}
-	service := NewRiscVCommandService(fakeRepository, fakeMedia)
+	service := NewRiscVCommandService(fakeRepository)
 
-	png := []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR")
-	mp4 := []byte("\x00\x00\x00\x14ftypmp42\x00\x00\x00\x00mp42")
 	draft, err := service.CreateDraft(context.Background(), 1, domain.CreateRiscVCommandDraft{
 		Mnemonic: "xor",
-		Image:    domain.UploadedMedia{Size: int64(len(png)), Reader: bytes.NewReader(png)},
-		Video:    domain.UploadedMedia{Size: int64(len(mp4)), Reader: bytes.NewReader(mp4)},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if draft.Mnemonic != "XOR" || draft.ImageKey != "images/generated.png" || draft.VideoKey != "video/generated.mp4" {
+	if draft.Mnemonic != "XOR" || draft.ImageKey != "" || draft.VideoKey != "" {
 		t.Fatalf("создан некорректный черновик: %+v", draft)
-	}
-	if len(fakeMedia.putDirectories) != 2 {
-		t.Fatalf("в MinIO отправлено файлов: %d, ожидалось 2", len(fakeMedia.putDirectories))
 	}
 
 	published, err := service.PublishDraft(context.Background(), 1, domain.PublishRiscVCommandDraft{
-		AssemblyExample: "xor x3, x1, x2",
-		Description:     "Выполняет побитовое исключающее ИЛИ для двух регистров.",
-		Format:          domain.InstructionFormatR,
-		OperandCount:    3,
-		LengthBits:      32,
+		Description:  "Выполняет побитовое исключающее ИЛИ для двух регистров.",
+		OperandCount: 3,
+		LengthBits:   32,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if published.Status != domain.RiscVCommandPublished || published.AssemblyExample == "" {
+	if published.Status != domain.RiscVCommandPublished || published.Description == "" {
 		t.Fatalf("получена некорректная опубликованная команда: %+v", published)
 	}
 }
 
-func TestRiscVCommandServiceValidatesPublicationFormat(t *testing.T) {
+func TestRiscVCommandServiceValidatesOperandCount(t *testing.T) {
 	draft := domain.RiscVCommand{ID: 12, Mnemonic: "LUI", Status: domain.RiscVCommandDraft}
-	service := NewRiscVCommandService(&fakeRiscVCommandRepository{draft: &draft}, &fakeMediaStorage{})
+	service := NewRiscVCommandService(&fakeRiscVCommandRepository{draft: &draft})
 	_, err := service.PublishDraft(context.Background(), 1, domain.PublishRiscVCommandDraft{
-		AssemblyExample: "lui x5, 0x12345",
-		Description:     "Загружает immediate в старшие разряды регистра.",
-		Format:          domain.InstructionFormatU,
-		OperandCount:    3,
-		LengthBits:      32,
+		Description:  "Загружает immediate в старшие разряды регистра.",
+		OperandCount: 4,
+		LengthBits:   32,
 	})
 	if !errors.Is(err, ErrInvalidRiscVCommand) {
-		t.Fatalf("получена ошибка %v, ожидалась ошибка формата команды", err)
+		t.Fatalf("получена ошибка %v, ожидалась ошибка количества операндов", err)
 	}
 }
 

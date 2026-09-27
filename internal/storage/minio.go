@@ -2,18 +2,24 @@ package storage
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
+const (
+	defaultImageURL = "/defaults/image.svg"
+	defaultVideoURL = "/defaults/video.mp4"
+)
+
+type objectStatClient interface {
+	StatObject(ctx context.Context, bucketName string, objectName string, options minio.StatObjectOptions) (minio.ObjectInfo, error)
+}
+
 type MinIOStorage struct {
-	client  *minio.Client
+	client  objectStatClient
 	bucket  string
 	baseURL string
 }
@@ -29,32 +35,21 @@ func NewMinIOStorage(endpoint string, accessKey string, secretKey string, bucket
 	return &MinIOStorage{client: client, bucket: bucket, baseURL: strings.TrimRight(baseURL, "/")}, nil
 }
 
-func (storage *MinIOStorage) Put(ctx context.Context, directory string, extension string, contentType string, reader io.Reader, size int64) (string, error) {
-	identifier := make([]byte, 16)
-	if _, err := rand.Read(identifier); err != nil {
-		return "", fmt.Errorf("создание имени медиафайла: %w", err)
-	}
-	key := strings.Trim(directory, "/") + "/" + hex.EncodeToString(identifier) + extension
-	_, err := storage.client.PutObject(ctx, storage.bucket, key, reader, size, minio.PutObjectOptions{ContentType: contentType})
-	if err != nil {
-		return "", fmt.Errorf("загрузка медиафайла %s: %w", key, err)
-	}
-	return key, nil
+func (storage *MinIOStorage) ImageURL(ctx context.Context, key string) string {
+	return storage.availableURL(ctx, key, defaultImageURL)
 }
 
-func (storage *MinIOStorage) Remove(ctx context.Context, key string) error {
-	if key == "" {
-		return nil
-	}
-	if err := storage.client.RemoveObject(ctx, storage.bucket, key, minio.RemoveObjectOptions{}); err != nil {
-		return fmt.Errorf("удаление медиафайла %s: %w", key, err)
-	}
-	return nil
+func (storage *MinIOStorage) VideoURL(ctx context.Context, key string) string {
+	return storage.availableURL(ctx, key, defaultVideoURL)
 }
 
-func (storage *MinIOStorage) URL(key string) string {
+func (storage *MinIOStorage) availableURL(ctx context.Context, key string, fallbackURL string) string {
+	key = strings.TrimLeft(strings.TrimSpace(key), "/")
 	if key == "" {
-		return storage.baseURL + "/images/default.svg"
+		return fallbackURL
 	}
-	return storage.baseURL + "/" + strings.TrimLeft(key, "/")
+	if _, err := storage.client.StatObject(ctx, storage.bucket, key, minio.StatObjectOptions{}); err != nil {
+		return fallbackURL
+	}
+	return storage.baseURL + "/" + key
 }

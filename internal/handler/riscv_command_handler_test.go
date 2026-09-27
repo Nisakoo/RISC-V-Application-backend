@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -14,31 +15,36 @@ import (
 
 type testMediaURLProvider struct{}
 
-func (testMediaURLProvider) URL(key string) string {
+func (testMediaURLProvider) ImageURL(_ context.Context, key string) string {
 	if key == "" {
-		return "http://localhost:9000/riscv-assets/images/default.svg"
+		return "/defaults/image.svg"
+	}
+	return "http://localhost:9000/riscv-assets/" + key
+}
+
+func (testMediaURLProvider) VideoURL(_ context.Context, key string) string {
+	if key == "" {
+		return "/defaults/video.mp4"
 	}
 	return "http://localhost:9000/riscv-assets/" + key
 }
 
 func TestRiscVCommandViewUsesDatabaseMediaKeys(t *testing.T) {
 	handler := &RiscVCommandHandler{media: testMediaURLProvider{}}
-	view := handler.toRiscVCommandView(domain.RiscVCommand{
-		ID:              9,
-		Mnemonic:        "ADDI",
-		AssemblyExample: "addi x2, x1, 3",
-		Description:     "Сложение с immediate.",
-		Format:          domain.InstructionFormatI,
-		OperandCount:    3,
-		LengthBits:      32,
-		ImageKey:        "images/ADDI.png",
-		VideoKey:        "video/ADDI.mp4",
-		LikeCount:       3,
+	view := handler.toRiscVCommandView(context.Background(), domain.RiscVCommand{
+		ID:           9,
+		Mnemonic:     "ADDI",
+		Description:  "Сложение с immediate.",
+		OperandCount: 3,
+		LengthBits:   32,
+		ImageKey:     "images/ADDI.png",
+		VideoKey:     "video/ADDI.mp4",
+		LikeCount:    3,
 	})
 	if view.ImageURL != "http://localhost:9000/riscv-assets/images/ADDI.png" || view.VideoURL != "http://localhost:9000/riscv-assets/video/ADDI.mp4" {
 		t.Fatalf("медиа-URL сформированы неверно: %+v", view)
 	}
-	if view.AssemblyExample != "addi x2, x1, 3" || view.LikeCount != 3 {
+	if view.OperandCount != 3 || view.LengthBits != 32 || view.LikeCount != 3 {
 		t.Fatalf("предметные поля преобразованы неверно: %+v", view)
 	}
 }
@@ -67,13 +73,11 @@ func TestOperandCountParameter(t *testing.T) {
 	}
 }
 
-func TestPublicationInputPreservesAssemblyExample(t *testing.T) {
+func TestPublicationInputPreservesSubjectFields(t *testing.T) {
 	form := url.Values{
-		"assembly_example": {"sub x3, x1, x2"},
-		"description":      {"Вычитает значение второго исходного регистра."},
-		"format":           {"R"},
-		"operand_count":    {"3"},
-		"length_bits":      {"32"},
+		"description":   {"Вычитает значение второго исходного регистра."},
+		"operand_count": {"3"},
+		"length_bits":   {"32"},
 	}
 	context, _ := gin.CreateTestContext(httptest.NewRecorder())
 	context.Request = httptest.NewRequest(http.MethodPost, "/", strings.NewReader(form.Encode()))
@@ -83,7 +87,7 @@ func TestPublicationInputPreservesAssemblyExample(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if input.AssemblyExample != "sub x3, x1, x2" || input.Format != domain.InstructionFormatR {
+	if input.Description == "" || input.OperandCount != 3 || input.LengthBits != 32 {
 		t.Fatalf("получены неверные данные публикации: %+v", input)
 	}
 }

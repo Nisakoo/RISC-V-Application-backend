@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"riscv-lab/internal/domain"
 	"riscv-lab/internal/route"
 )
 
@@ -27,16 +26,14 @@ type layoutView struct {
 }
 
 type riscvCommandView struct {
-	ID              int64
-	Mnemonic        string
-	AssemblyExample string
-	Description     string
-	Format          domain.InstructionFormat
-	OperandCount    int
-	LengthBits      int
-	ImageURL        string
-	VideoURL        string
-	LikeCount       int64
+	ID           int64
+	Mnemonic     string
+	Description  string
+	OperandCount int
+	LengthBits   int
+	ImageURL     string
+	VideoURL     string
+	LikeCount    int64
 }
 
 type feedPageView struct {

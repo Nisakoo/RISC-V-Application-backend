@@ -1,6 +1,6 @@
 # ER-диаграмма ЛР2
 
-Диаграмма соответствует миграциям из `internal/migration/sql`. Готовый проект для открытия и дальнейшего оформления в StarUML находится в файле [`ER.mdj`](ER.mdj); ниже сохранено независимое текстовое представление схемы.
+Диаграмма соответствует миграциям из `internal/migration/sql`. Редактируемые версии доступны для [StarUML](ER.mdj) и [draw.io](ER.drawio); ниже сохранено независимое текстовое представление схемы.
 
 ```mermaid
 erDiagram
@@ -14,22 +14,19 @@ erDiagram
         varchar login UK "64 символа"
         varchar password_hash "255 символов"
         varchar role "user или moderator"
-        timestamptz created_at
     }
 
     RISC_V_COMMANDS {
         bigint id PK
         varchar mnemonic "16 символов"
-        varchar assembly_example "128 символов"
-        varchar description "1000 символов"
-        varchar format "R I S B U J"
-        smallint operand_count "от 0 до 3"
-        smallint length_bits "16 32 48 64"
-        varchar image_key "255 символов"
-        varchar video_key "255 символов"
+        varchar description "до 1000 символов; N"
+        smallint operand_count "от 0 до 3; N"
+        smallint length_bits "16 32 48 64; N"
+        varchar image_key "до 255 символов; N"
+        varchar video_key "до 255 символов; N"
         varchar status "draft published deleted"
         timestamptz created_at
-        timestamptz published_at "может отсутствовать"
+        timestamptz published_at "N"
         bigint creator_id FK
     }
 
@@ -48,4 +45,7 @@ erDiagram
 - `riscv_commands.status` принимает только `draft`, `published`, `deleted`;
 - все внешние ключи используют ограничение удаления `RESTRICT`, каскадное удаление запрещено;
 - `published_at` обязателен для опубликованной команды;
-- `image_key` и `video_key` содержат только ключи объектов MinIO.
+- пометка `N` у полей команды означает, что они допускают `NULL` для черновика;
+- `operand_count` и `length_bits` — два предметных поля команды RISC-V;
+- `image_key` и `video_key` содержат ключи существующих объектов MinIO, а для новых команд имеют значение `NULL`;
+- для пустых ключей и недоступных объектов SSR-сервер подставляет локальные фото и видео по умолчанию.

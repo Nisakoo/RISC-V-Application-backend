@@ -19,20 +19,18 @@ var (
 )
 
 type riscvCommandRecord struct {
-	ID              int64                     `gorm:"primaryKey;column:id"`
-	Mnemonic        string                    `gorm:"column:mnemonic"`
-	AssemblyExample string                    `gorm:"column:assembly_example"`
-	Description     string                    `gorm:"column:description"`
-	Format          domain.InstructionFormat  `gorm:"column:format"`
-	OperandCount    int                       `gorm:"column:operand_count"`
-	LengthBits      int                       `gorm:"column:length_bits"`
-	ImageKey        string                    `gorm:"column:image_key"`
-	VideoKey        string                    `gorm:"column:video_key"`
-	Status          domain.RiscVCommandStatus `gorm:"column:status"`
-	CreatedAt       time.Time                 `gorm:"column:created_at"`
-	PublishedAt     *time.Time                `gorm:"column:published_at"`
-	CreatorID       int64                     `gorm:"column:creator_id"`
-	LikeCount       int64                     `gorm:"column:like_count;->"`
+	ID           int64                     `gorm:"primaryKey;column:id"`
+	Mnemonic     string                    `gorm:"column:mnemonic"`
+	Description  string                    `gorm:"column:description"`
+	OperandCount int                       `gorm:"column:operand_count"`
+	LengthBits   int                       `gorm:"column:length_bits"`
+	ImageKey     string                    `gorm:"column:image_key"`
+	VideoKey     string                    `gorm:"column:video_key"`
+	Status       domain.RiscVCommandStatus `gorm:"column:status"`
+	CreatedAt    time.Time                 `gorm:"column:created_at"`
+	PublishedAt  *time.Time                `gorm:"column:published_at"`
+	CreatorID    int64                     `gorm:"column:creator_id"`
+	LikeCount    int64                     `gorm:"column:like_count;->"`
 }
 
 func (riscvCommandRecord) TableName() string {
@@ -117,18 +115,16 @@ func (repository *RiscVCommandRepository) GetNextVisible(ctx context.Context, id
 	return record.toDomain(), nil
 }
 
-func (repository *RiscVCommandRepository) CreateDraft(ctx context.Context, creatorID int64, input domain.CreateRiscVCommandDraft, imageKey string, videoKey string) (domain.RiscVCommand, error) {
+func (repository *RiscVCommandRepository) CreateDraft(ctx context.Context, creatorID int64, input domain.CreateRiscVCommandDraft) (domain.RiscVCommand, error) {
 	record := riscvCommandRecord{
-		Mnemonic:    input.Mnemonic,
-		ImageKey:    imageKey,
-		VideoKey:    videoKey,
-		Status:      domain.RiscVCommandDraft,
-		LengthBits:  32,
-		CreatorID:   creatorID,
-		CreatedAt:   time.Now().UTC(),
-		PublishedAt: nil,
+		Mnemonic:  input.Mnemonic,
+		Status:    domain.RiscVCommandDraft,
+		CreatorID: creatorID,
+		CreatedAt: time.Now().UTC(),
 	}
-	if err := repository.db.WithContext(ctx).Create(&record).Error; err != nil {
+	if err := repository.db.WithContext(ctx).
+		Omit("Description", "OperandCount", "LengthBits", "ImageKey", "VideoKey").
+		Create(&record).Error; err != nil {
 		var postgresError *pgconn.PgError
 		if errors.As(err, &postgresError) && postgresError.Code == "23505" {
 			return domain.RiscVCommand{}, ErrDraftAlreadyExists
@@ -144,13 +140,11 @@ func (repository *RiscVCommandRepository) PublishDraft(ctx context.Context, id i
 		Model(&riscvCommandRecord{}).
 		Where("id = ? AND creator_id = ? AND status = ?", id, creatorID, domain.RiscVCommandDraft).
 		Updates(map[string]any{
-			"assembly_example": input.AssemblyExample,
-			"description":      input.Description,
-			"format":           input.Format,
-			"operand_count":    input.OperandCount,
-			"length_bits":      input.LengthBits,
-			"status":           domain.RiscVCommandPublished,
-			"published_at":     now,
+			"description":   input.Description,
+			"operand_count": input.OperandCount,
+			"length_bits":   input.LengthBits,
+			"status":        domain.RiscVCommandPublished,
+			"published_at":  now,
 		})
 	if result.Error != nil {
 		return domain.RiscVCommand{}, fmt.Errorf("публикация команды RISC-V: %w", result.Error)
@@ -187,20 +181,18 @@ func (repository *RiscVCommandRepository) withLikes(ctx context.Context) *gorm.D
 
 func (record riscvCommandRecord) toDomain() domain.RiscVCommand {
 	return domain.RiscVCommand{
-		ID:              record.ID,
-		Mnemonic:        record.Mnemonic,
-		AssemblyExample: record.AssemblyExample,
-		Description:     record.Description,
-		Format:          record.Format,
-		OperandCount:    record.OperandCount,
-		LengthBits:      record.LengthBits,
-		ImageKey:        record.ImageKey,
-		VideoKey:        record.VideoKey,
-		Status:          record.Status,
-		CreatedAt:       record.CreatedAt,
-		PublishedAt:     record.PublishedAt,
-		CreatorID:       record.CreatorID,
-		LikeCount:       record.LikeCount,
+		ID:           record.ID,
+		Mnemonic:     record.Mnemonic,
+		Description:  record.Description,
+		OperandCount: record.OperandCount,
+		LengthBits:   record.LengthBits,
+		ImageKey:     record.ImageKey,
+		VideoKey:     record.VideoKey,
+		Status:       record.Status,
+		CreatedAt:    record.CreatedAt,
+		PublishedAt:  record.PublishedAt,
+		CreatorID:    record.CreatorID,
+		LikeCount:    record.LikeCount,
 	}
 }
 

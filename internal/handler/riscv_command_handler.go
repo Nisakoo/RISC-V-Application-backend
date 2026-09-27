@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"log"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,13 +15,11 @@ import (
 	"riscv-lab/internal/service"
 )
 
-const (
-	currentModeratorID      int64 = 1
-	maximumRequestBodyBytes       = 522 * 1024 * 1024
-)
+const currentModeratorID int64 = 1
 
 type mediaURLProvider interface {
-	URL(key string) string
+	ImageURL(ctx context.Context, key string) string
+	VideoURL(ctx context.Context, key string) string
 }
 
 type RiscVCommandHandler struct {
@@ -66,7 +64,7 @@ func (handler *RiscVCommandHandler) Feed(context *gin.Context) {
 
 	context.HTML(http.StatusOK, "feed.html", feedPageView{
 		Layout:              newLayoutView(command.Mnemonic+" · RISC-V", activePageFeed),
-		RiscVCommand:        handler.toRiscVCommandView(command),
+		RiscVCommand:        handler.toRiscVCommandView(context.Request.Context(), command),
 		NextRiscVCommandURL: route.Feed + "?id=" + strconv.FormatInt(nextCommand.ID, 10),
 	})
 }
@@ -86,35 +84,12 @@ func (handler *RiscVCommandHandler) AddPage(context *gin.Context) {
 }
 
 func (handler *RiscVCommandHandler) CreateDraft(context *gin.Context) {
-	context.Request.Body = http.MaxBytesReader(context.Writer, context.Request.Body, maximumRequestBodyBytes)
-	image, imageError := context.FormFile("riscv_command_image")
-	video, videoError := context.FormFile("riscv_command_video")
-	if imageError != nil || videoError != nil {
-		handler.renderDraft(context, http.StatusBadRequest, domain.RiscVCommand{Mnemonic: strings.TrimSpace(context.PostForm("mnemonic"))}, "Выберите изображение и видео команды.")
-		return
-	}
-
-	imageFile, err := image.Open()
-	if err != nil {
-		handler.renderDraft(context, http.StatusBadRequest, domain.RiscVCommand{}, "Не удалось прочитать изображение.")
-		return
-	}
-	defer imageFile.Close()
-	videoFile, err := video.Open()
-	if err != nil {
-		handler.renderDraft(context, http.StatusBadRequest, domain.RiscVCommand{}, "Не удалось прочитать видео.")
-		return
-	}
-	defer videoFile.Close()
-
 	input := domain.CreateRiscVCommandDraft{
 		Mnemonic: context.PostForm("mnemonic"),
-		Image:    uploadedMedia(image, imageFile),
-		Video:    uploadedMedia(video, videoFile),
 	}
-	_, err = handler.service.CreateDraft(context.Request.Context(), currentModeratorID, input)
+	_, err := handler.service.CreateDraft(context.Request.Context(), currentModeratorID, input)
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidRiscVCommand) || errors.Is(err, service.ErrInvalidImage) || errors.Is(err, service.ErrInvalidVideo) || errors.Is(err, service.ErrDraftAlreadyExists) {
+		if errors.Is(err, service.ErrInvalidRiscVCommand) || errors.Is(err, service.ErrDraftAlreadyExists) {
 			handler.renderDraft(context, http.StatusBadRequest, domain.RiscVCommand{Mnemonic: strings.ToUpper(strings.TrimSpace(input.Mnemonic))}, err.Error())
 			return
 		}
@@ -157,7 +132,7 @@ func (handler *RiscVCommandHandler) Grid(context *gin.Context) {
 	}
 	views := make([]riscvCommandView, 0, len(commands))
 	for _, command := range commands {
-		views = append(views, handler.toRiscVCommandView(command))
+		views = append(views, handler.toRiscVCommandView(context.Request.Context(), command))
 	}
 
 	context.HTML(http.StatusOK, "grid.html", gridPageView{
@@ -210,28 +185,17 @@ func publicationInput(context *gin.Context) (domain.PublishRiscVCommandDraft, er
 		return domain.PublishRiscVCommandDraft{}, errors.New("длина команды должна быть числом")
 	}
 	return domain.PublishRiscVCommandDraft{
-		AssemblyExample: context.PostForm("assembly_example"),
-		Description:     context.PostForm("description"),
-		Format:          domain.InstructionFormat(context.PostForm("format")),
-		OperandCount:    operandCount,
-		LengthBits:      lengthBits,
+		Description:  context.PostForm("description"),
+		OperandCount: operandCount,
+		LengthBits:   lengthBits,
 	}, nil
-}
-
-func uploadedMedia(header *multipart.FileHeader, file multipart.File) domain.UploadedMedia {
-	return domain.UploadedMedia{
-		OriginalName: header.Filename,
-		ContentType:  header.Header.Get("Content-Type"),
-		Size:         header.Size,
-		Reader:       file,
-	}
 }
 
 func (handler *RiscVCommandHandler) renderDraft(context *gin.Context, status int, command domain.RiscVCommand, message string) {
 	context.HTML(status, "draft.html", draftPageView{
 		Layout:       newLayoutView("Добавление команды · RISC-V", activePageDraft),
 		HasDraft:     command.ID > 0,
-		RiscVCommand: handler.toRiscVCommandView(command),
+		RiscVCommand: handler.toRiscVCommandView(context.Request.Context(), command),
 		ErrorMessage: message,
 	})
 }
@@ -247,18 +211,16 @@ func (handler *RiscVCommandHandler) renderCurrentDraftWithError(context *gin.Con
 	handler.renderDraft(context, status, draft, message)
 }
 
-func (handler *RiscVCommandHandler) toRiscVCommandView(command domain.RiscVCommand) riscvCommandView {
+func (handler *RiscVCommandHandler) toRiscVCommandView(ctx context.Context, command domain.RiscVCommand) riscvCommandView {
 	return riscvCommandView{
-		ID:              command.ID,
-		Mnemonic:        command.Mnemonic,
-		AssemblyExample: command.AssemblyExample,
-		Description:     command.Description,
-		Format:          command.Format,
-		OperandCount:    command.OperandCount,
-		LengthBits:      command.LengthBits,
-		ImageURL:        handler.media.URL(command.ImageKey),
-		VideoURL:        handler.media.URL(command.VideoKey),
-		LikeCount:       command.LikeCount,
+		ID:           command.ID,
+		Mnemonic:     command.Mnemonic,
+		Description:  command.Description,
+		OperandCount: command.OperandCount,
+		LengthBits:   command.LengthBits,
+		ImageURL:     handler.media.ImageURL(ctx, command.ImageKey),
+		VideoURL:     handler.media.VideoURL(ctx, command.VideoKey),
+		LikeCount:    command.LikeCount,
 	}
 }
 

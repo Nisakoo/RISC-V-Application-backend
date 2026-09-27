@@ -21,6 +21,8 @@ func NewServer(address string, riscvCommandHandler *handler.RiscVCommandHandler)
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "resources")
+	router.StaticFile("/defaults/image.svg", "assets/images/default.svg")
+	router.StaticFile("/defaults/video.mp4", "assets/video/ADD.mp4")
 
 	router.GET(route.Root, func(context *gin.Context) {
 		context.Redirect(http.StatusFound, route.Feed)

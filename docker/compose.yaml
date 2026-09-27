@@ -28,7 +28,7 @@ services:
       - "8081:8080"
 
   minio:
-    image: minio/minio:latest
+    image: docker.io/pgsty/silo:RELEASE.2026-09-16T00-00-00Z
     container_name: riscv-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -43,7 +43,7 @@ services:
       - minio-data:/data
 
   minio-setup:
-    image: minio/mc:latest
+    image: docker.io/pgsty/silo:RELEASE.2026-09-16T00-00-00Z
     depends_on:
       - minio
     environment:
@@ -55,11 +55,11 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do sleep 1; done
-        mc mb --ignore-existing "local/$$MINIO_BUCKET"
-        mc anonymous set download "local/$$MINIO_BUCKET"
-        mc mirror --overwrite --exclude "*.DS_Store" /assets "local/$$MINIO_BUCKET"
-        mc rm --force "local/$$MINIO_BUCKET/.DS_Store" >/dev/null 2>&1 || true
+        until mcli alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do sleep 1; done
+        mcli mb --ignore-existing "local/$$MINIO_BUCKET"
+        mcli anonymous set download "local/$$MINIO_BUCKET"
+        mcli mirror --overwrite --exclude "*.DS_Store" /assets "local/$$MINIO_BUCKET"
+        mcli rm --force "local/$$MINIO_BUCKET/.DS_Store" >/dev/null 2>&1 || true
 
 volumes:
   minio-data:
