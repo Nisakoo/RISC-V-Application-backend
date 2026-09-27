@@ -23,15 +23,18 @@ type RiscVCommand struct {
 	CreatedAt    time.Time
 	PublishedAt  *time.Time
 	CreatorID    int64
+	CreatorLogin string
 	LikeCount    int64
 }
 
 type CreateRiscVCommandDraft struct {
 	Mnemonic string
+	ImageKey string
+	VideoKey string
 }
 
 type PublishRiscVCommandDraft struct {
-	Description  string
-	OperandCount int
-	LengthBits   int
+	Description  string `json:"description"`
+	OperandCount int    `json:"operand_count"`
+	LengthBits   int    `json:"length_bits"`
 }

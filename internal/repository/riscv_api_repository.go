@@ -1,0 +1,82 @@
+package repository
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
+	"riscv-lab/internal/domain"
+)
+
+var ErrLoginAlreadyExists = errors.New("пользователь с таким логином уже существует")
+
+type userRecord struct {
+	ID           int64  `gorm:"primaryKey;column:id"`
+	Login        string `gorm:"column:login"`
+	PasswordHash string `gorm:"column:password_hash"`
+	Role         string `gorm:"column:role"`
+}
+
+func (userRecord) TableName() string { return "users" }
+
+func (repository *RiscVCommandRepository) SoftDeleteOwned(ctx context.Context, id, creatorID int64) error {
+	result := repository.db.WithContext(ctx).Model(&riscvCommandRecord{}).
+		Where("id = ? AND creator_id = ? AND status IN ?", id, creatorID, []domain.RiscVCommandStatus{domain.RiscVCommandDraft, domain.RiscVCommandPublished}).
+		Update("status", domain.RiscVCommandDeleted)
+	if result.Error != nil {
+		return fmt.Errorf("логическое удаление команды RISC-V: %w", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return ErrRiscVCommandNotFound
+	}
+	return nil
+}
+
+func (repository *RiscVCommandRepository) SetLike(ctx context.Context, commandID, userID int64, liked bool) (int64, error) {
+	var count int64
+	err := repository.db.WithContext(ctx).Transaction(func(transaction *gorm.DB) error {
+		var command riscvCommandRecord
+		if err := transaction.Where("id = ? AND status = ?", commandID, domain.RiscVCommandPublished).Take(&command).Error; err != nil {
+			return mapNotFound(err)
+		}
+		if liked {
+			like := riscvCommandLikeRecord{UserID: userID, RiscVCommandID: commandID}
+			if err := transaction.Clauses(clause.OnConflict{DoNothing: true}).Create(&like).Error; err != nil {
+				return err
+			}
+		} else {
+			if err := transaction.Where("user_id = ? AND riscv_command_id = ?", userID, commandID).Delete(&riscvCommandLikeRecord{}).Error; err != nil {
+				return err
+			}
+		}
+		return transaction.Model(&riscvCommandLikeRecord{}).Where("riscv_command_id = ?", commandID).Count(&count).Error
+	})
+	if err != nil {
+		return 0, fmt.Errorf("изменение лайка команды RISC-V: %w", err)
+	}
+	return count, nil
+}
+
+type riscvCommandLikeRecord struct {
+	ID             int64 `gorm:"primaryKey;column:id"`
+	UserID         int64 `gorm:"column:user_id"`
+	RiscVCommandID int64 `gorm:"column:riscv_command_id"`
+}
+
+func (riscvCommandLikeRecord) TableName() string { return "riscv_command_likes" }
+
+func (repository *RiscVCommandRepository) RegisterUser(ctx context.Context, login, passwordHash string) (int64, error) {
+	user := userRecord{Login: login, PasswordHash: passwordHash, Role: "user"}
+	if err := repository.db.WithContext(ctx).Create(&user).Error; err != nil {
+		var postgresError *pgconn.PgError
+		if errors.As(err, &postgresError) && postgresError.Code == "23505" {
+			return 0, ErrLoginAlreadyExists
+		}
+		return 0, fmt.Errorf("регистрация пользователя: %w", err)
+	}
+	return user.ID, nil
+}

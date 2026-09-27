@@ -17,7 +17,7 @@ type Server struct {
 	address string
 }
 
-func NewServer(address string, riscvCommandHandler *handler.RiscVCommandHandler) *Server {
+func NewServer(address string, riscvCommandHandler *handler.RiscVCommandHandler, apiHandlers ...*handler.RiscVAPIHandler) *Server {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*.html")
 	router.Static("/static", "resources")
@@ -33,6 +33,19 @@ func NewServer(address string, riscvCommandHandler *handler.RiscVCommandHandler)
 	router.POST(route.Add, riscvCommandHandler.CreateDraft)
 	router.POST(route.Publish, riscvCommandHandler.PublishDraft)
 	router.POST(route.Delete, riscvCommandHandler.Delete)
+	if len(apiHandlers) > 0 && apiHandlers[0] != nil {
+		api := apiHandlers[0]
+		router.GET("/api/riscv_commands", api.List)
+		router.GET("/api/riscv_commands/feed", api.Feed)
+		router.GET("/api/riscv_commands/draft", api.Draft)
+		router.POST("/api/riscv_commands", api.Create)
+		router.PUT("/api/riscv_commands/:id/publish", api.Publish)
+		router.DELETE("/api/riscv_commands/:id", api.Delete)
+		router.POST("/api/riscv_commands/:id/like", api.Like)
+		router.POST("/api/users", api.Register)
+		router.POST("/api/users/authentication", api.AuthenticationStub)
+		router.POST("/api/users/logout", api.LogoutStub)
+	}
 
 	return &Server{router: router, address: address}
 }

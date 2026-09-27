@@ -30,6 +30,7 @@ type riscvCommandRecord struct {
 	CreatedAt    time.Time                 `gorm:"column:created_at"`
 	PublishedAt  *time.Time                `gorm:"column:published_at"`
 	CreatorID    int64                     `gorm:"column:creator_id"`
+	CreatorLogin string                    `gorm:"column:creator_login;->"`
 	LikeCount    int64                     `gorm:"column:like_count;->"`
 }
 
@@ -118,13 +119,18 @@ func (repository *RiscVCommandRepository) GetNextVisible(ctx context.Context, id
 func (repository *RiscVCommandRepository) CreateDraft(ctx context.Context, creatorID int64, input domain.CreateRiscVCommandDraft) (domain.RiscVCommand, error) {
 	record := riscvCommandRecord{
 		Mnemonic:  input.Mnemonic,
+		ImageKey:  input.ImageKey,
+		VideoKey:  input.VideoKey,
 		Status:    domain.RiscVCommandDraft,
 		CreatorID: creatorID,
 		CreatedAt: time.Now().UTC(),
 	}
-	if err := repository.db.WithContext(ctx).
-		Omit("Description", "OperandCount", "LengthBits", "ImageKey", "VideoKey").
-		Create(&record).Error; err != nil {
+	omittedFields := []string{"Description", "OperandCount", "LengthBits"}
+	if input.ImageKey == "" && input.VideoKey == "" {
+		omittedFields = append(omittedFields, "ImageKey", "VideoKey")
+	}
+	query := repository.db.WithContext(ctx).Omit(omittedFields...)
+	if err := query.Create(&record).Error; err != nil {
 		var postgresError *pgconn.PgError
 		if errors.As(err, &postgresError) && postgresError.Code == "23505" {
 			return domain.RiscVCommand{}, ErrDraftAlreadyExists
@@ -174,9 +180,10 @@ func (repository *RiscVCommandRepository) SoftDelete(ctx context.Context, id int
 func (repository *RiscVCommandRepository) withLikes(ctx context.Context) *gorm.DB {
 	return repository.db.WithContext(ctx).
 		Model(&riscvCommandRecord{}).
-		Select("riscv_commands.*, COUNT(riscv_command_likes.id) AS like_count").
+		Select("riscv_commands.*, users.login AS creator_login, COUNT(riscv_command_likes.id) AS like_count").
+		Joins("JOIN users ON users.id = riscv_commands.creator_id").
 		Joins("LEFT JOIN riscv_command_likes ON riscv_command_likes.riscv_command_id = riscv_commands.id").
-		Group("riscv_commands.id")
+		Group("riscv_commands.id, users.id")
 }
 
 func (record riscvCommandRecord) toDomain() domain.RiscVCommand {
@@ -192,6 +199,7 @@ func (record riscvCommandRecord) toDomain() domain.RiscVCommand {
 		CreatedAt:    record.CreatedAt,
 		PublishedAt:  record.PublishedAt,
 		CreatorID:    record.CreatorID,
+		CreatorLogin: record.CreatorLogin,
 		LikeCount:    record.LikeCount,
 	}
 }
