@@ -50,7 +50,7 @@ func main() {
 		log.Fatal(err)
 	}
 	riscvCommandRepository := repository.NewRiscVCommandRepository(database)
-	riscvCommandService := service.NewRiscVCommandService(riscvCommandRepository, mediaStorage)
+	riscvCommandService := service.NewRiscVCommandService(riscvCommandRepository)
 	riscvCommandHandler := handler.NewRiscVCommandHandler(riscvCommandService, mediaStorage)
 	server := app.NewServer(applicationConfig.ServerAddress, riscvCommandHandler)
 

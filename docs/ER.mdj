@@ -112,21 +112,6 @@
 											"top": 283,
 											"width": 250,
 											"height": 13
-										},
-										{
-											"_type": "ERDColumnView",
-											"_id": "view-users-column-5",
-											"_parent": {
-												"$ref": "view-users-columns"
-											},
-											"model": {
-												"$ref": "column-users-created-at"
-											},
-											"font": "Arial;13;0",
-											"left": 45,
-											"top": 298,
-											"width": 250,
-											"height": 13
 										}
 									],
 									"font": "Arial;13;0",
@@ -213,21 +198,6 @@
 										},
 										{
 											"_type": "ERDColumnView",
-											"_id": "view-riscv-commands-column-3",
-											"_parent": {
-												"$ref": "view-riscv-commands-columns"
-											},
-											"model": {
-												"$ref": "column-riscv-commands-assembly-example"
-											},
-											"font": "Arial;13;0",
-											"left": 365,
-											"top": 98,
-											"width": 320,
-											"height": 13
-										},
-										{
-											"_type": "ERDColumnView",
 											"_id": "view-riscv-commands-column-4",
 											"_parent": {
 												"$ref": "view-riscv-commands-columns"
@@ -238,21 +208,6 @@
 											"font": "Arial;13;0",
 											"left": 365,
 											"top": 113,
-											"width": 320,
-											"height": 13
-										},
-										{
-											"_type": "ERDColumnView",
-											"_id": "view-riscv-commands-column-5",
-											"_parent": {
-												"$ref": "view-riscv-commands-columns"
-											},
-											"model": {
-												"$ref": "column-riscv-commands-format"
-											},
-											"font": "Arial;13;0",
-											"left": 365,
-											"top": 128,
 											"width": 320,
 											"height": 13
 										},
@@ -838,16 +793,6 @@
 							"name": "role",
 							"type": "VARCHAR",
 							"length": "16"
-						},
-						{
-							"_type": "ERDColumn",
-							"_id": "column-users-created-at",
-							"_parent": {
-								"$ref": "entity-users"
-							},
-							"name": "created_at",
-							"type": "TIMESTAMPTZ",
-							"length": 0
 						}
 					]
 				},
@@ -913,33 +858,14 @@
 						},
 						{
 							"_type": "ERDColumn",
-							"_id": "column-riscv-commands-assembly-example",
-							"_parent": {
-								"$ref": "entity-riscv-commands"
-							},
-							"name": "assembly_example",
-							"type": "VARCHAR",
-							"length": "128"
-						},
-						{
-							"_type": "ERDColumn",
 							"_id": "column-riscv-commands-description",
 							"_parent": {
 								"$ref": "entity-riscv-commands"
 							},
 							"name": "description",
 							"type": "VARCHAR",
-							"length": "1000"
-						},
-						{
-							"_type": "ERDColumn",
-							"_id": "column-riscv-commands-format",
-							"_parent": {
-								"$ref": "entity-riscv-commands"
-							},
-							"name": "format",
-							"type": "VARCHAR",
-							"length": "1"
+							"length": "1000",
+							"nullable": true
 						},
 						{
 							"_type": "ERDColumn",
@@ -949,7 +875,8 @@
 							},
 							"name": "operand_count",
 							"type": "SMALLINT",
-							"length": 0
+							"length": 0,
+							"nullable": true
 						},
 						{
 							"_type": "ERDColumn",
@@ -959,7 +886,8 @@
 							},
 							"name": "length_bits",
 							"type": "SMALLINT",
-							"length": 0
+							"length": 0,
+							"nullable": true
 						},
 						{
 							"_type": "ERDColumn",
@@ -969,7 +897,8 @@
 							},
 							"name": "image_key",
 							"type": "VARCHAR",
-							"length": "255"
+							"length": "255",
+							"nullable": true
 						},
 						{
 							"_type": "ERDColumn",
@@ -979,7 +908,8 @@
 							},
 							"name": "video_key",
 							"type": "VARCHAR",
-							"length": "255"
+							"length": "255",
+							"nullable": true
 						},
 						{
 							"_type": "ERDColumn",
@@ -1009,7 +939,8 @@
 							},
 							"name": "published_at",
 							"type": "TIMESTAMPTZ",
-							"length": 0
+							"length": 0,
+							"nullable": true
 						},
 						{
 							"_type": "ERDColumn",

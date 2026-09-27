@@ -33,13 +33,13 @@ infra-down:
 	docker compose --env-file $(COMPOSE_ENV) -f $(COMPOSE_FILE) down
 
 migrate-up: infra-up
-	go run ./cmd/migrate up
+	set -a; . $(COMPOSE_ENV); set +a; go run ./cmd/migrate up
 
 migrate-down: infra-up
-	go run ./cmd/migrate down
+	set -a; . $(COMPOSE_ENV); set +a; go run ./cmd/migrate down
 
 run: migrate-up
-	go run ./cmd/api
+	set -a; . $(COMPOSE_ENV); set +a; go run ./cmd/api
 
 format:
 	gofmt -w $$(find . -path ./.git -prune -o -type f -name '*.go' -print)

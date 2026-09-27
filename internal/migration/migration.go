@@ -12,6 +12,9 @@ import (
 var versions = []string{
 	"001_riscv_commands",
 	"002_deleted_draft_constraint",
+	"003_methodology_media_and_fields",
+	"004_restore_command_length",
+	"005_command_fields",
 }
 
 //go:embed sql/*.sql

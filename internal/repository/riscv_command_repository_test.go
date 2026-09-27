@@ -24,11 +24,11 @@ func TestRiscVCommandRepositoryQueriesPostgreSQL(t *testing.T) {
 	}
 	if err := repository.db.WithContext(ctx).Exec(`
 		INSERT INTO riscv_commands (
-			id, mnemonic, assembly_example, description, format, operand_count, length_bits,
+			id, mnemonic, description, operand_count, length_bits,
 			image_key, video_key, status, creator_id, published_at
 		) VALUES
-			(-2002, 'TESTU1', 'lui x1, 1', 'Тестовая команда для проверки чтения из PostgreSQL.', 'U', 2, 32, 'images/default.svg', 'video/ADD.mp4', 'published', ?, CURRENT_TIMESTAMP),
-			(-2001, 'TESTU2', 'jal x1, label', 'Тестовая команда для проверки порядка ленты PostgreSQL.', 'J', 2, 32, 'images/default.svg', 'video/ADD.mp4', 'published', ?, CURRENT_TIMESTAMP)
+			(-2002, 'TESTU1', 'Тестовая команда для проверки чтения из PostgreSQL.', 2, 32, 'images/default.svg', 'video/ADD.mp4', 'published', ?, CURRENT_TIMESTAMP),
+			(-2001, 'TESTU2', 'Тестовая команда для проверки порядка ленты PostgreSQL.', 2, 32, 'images/default.svg', 'video/ADD.mp4', 'published', ?, CURRENT_TIMESTAMP)
 	`, creatorID, creatorID).Error; err != nil {
 		t.Fatal(err)
 	}
@@ -86,19 +86,32 @@ func TestRiscVCommandRepositoryDraftLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	draft, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "XOR"}, "images/xor.png", "video/xor.mp4")
+	draft, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "XOR"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if draft.Status != domain.RiscVCommandDraft || draft.CreatorID != creatorID {
 		t.Fatalf("создан некорректный черновик: %+v", draft)
 	}
+	if draft.ImageKey != "" || draft.VideoKey != "" {
+		t.Fatalf("для нового черновика сохранены ключи медиа: %+v", draft)
+	}
+	var missingFields int64
+	if err := repository.db.WithContext(ctx).Raw(`
+		SELECT COUNT(*) FROM riscv_commands
+		WHERE id = ? AND description IS NULL AND operand_count IS NULL
+		AND length_bits IS NULL AND image_key IS NULL AND video_key IS NULL
+		AND published_at IS NULL
+	`, draft.ID).Scan(&missingFields).Error; err != nil {
+		t.Fatal(err)
+	}
+	if missingFields != 1 {
+		t.Fatal("поля нового черновика должны быть NULL до публикации")
+	}
 	published, err := repository.PublishDraft(ctx, draft.ID, creatorID, domain.PublishRiscVCommandDraft{
-		AssemblyExample: "xor x3, x1, x2",
-		Description:     "Выполняет побитовое исключающее ИЛИ для двух исходных регистров.",
-		Format:          domain.InstructionFormatR,
-		OperandCount:    3,
-		LengthBits:      32,
+		Description:  "Выполняет побитовое исключающее ИЛИ для двух исходных регистров.",
+		OperandCount: 3,
+		LengthBits:   32,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -118,10 +131,10 @@ func TestRiscVCommandRepositoryDraftLifecycle(t *testing.T) {
 		t.Fatalf("получен статус %q, ожидался deleted", deleted.Status)
 	}
 
-	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLT"}, "images/slt.png", "video/slt.mp4"); err != nil {
+	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLT"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLL"}, "images/sll.png", "video/sll.mp4"); err != ErrDraftAlreadyExists {
+	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLL"}); err != ErrDraftAlreadyExists {
 		t.Fatalf("получена ошибка %v, ожидалась %v", err, ErrDraftAlreadyExists)
 	}
 }

@@ -34,7 +34,7 @@
             <a href="{{ $.Layout.FeedURL }}?id={{ .ID }}"><img class="instruction-card__image" src="{{ .ImageURL }}" alt="Схема команды {{ .Mnemonic }}" loading="lazy" decoding="async"></a>
             <div class="card-body">
               <h2 class="card-title">{{ .Mnemonic }}</h2>
-              <div class="instruction-card__meta"><span class="badge">{{ .Format }} · {{ .OperandCount }} · {{ .LengthBits }} бит</span><span aria-label="{{ .LikeCount }} отметок нравится">♡ {{ .LikeCount }}</span></div>
+              <div class="instruction-card__meta"><span class="badge">{{ .OperandCount }} · {{ .LengthBits }} бит</span><span aria-label="{{ .LikeCount }} отметок нравится">♡ {{ .LikeCount }}</span></div>
               <form method="post" action="{{ $.Layout.DeleteURL }}">
                 <input type="hidden" name="riscv_command_id" value="{{ .ID }}">
                 <button class="instruction-card__delete" type="submit">Удалить</button>

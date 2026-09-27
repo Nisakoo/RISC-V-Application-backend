@@ -210,29 +210,17 @@ textarea { font: inherit; }
   background: var(--color-accent);
 }
 
-.feed-example {
-  display: block;
-  width: fit-content;
-  padding: 5px 8px;
-  margin-top: 8px;
-  border-radius: 8px;
-  background: rgba(17, 18, 25, .56);
-  color: #fff;
-  font-size: 14px;
-}
-
 .feed-information {
-  display: flex;
+  display: grid;
   margin-top: auto;
-  margin-bottom: 12px;
+  grid-template-columns: minmax(0, 1fr) 94px;
   gap: 16px;
-  align-items: flex-end;
+  align-items: end;
 }
 
 .feed-properties {
   display: grid;
-  width: 94px;
-  flex: 0 0 94px;
+  width: 100%;
   gap: 5px;
   margin: 0;
 }
@@ -255,7 +243,8 @@ textarea { font: inherit; }
 .feed-description {
   min-width: 0;
   margin: 0;
-  flex: 1;
+  max-height: 50vh;
+  overflow-y: auto;
   color: #ececf1;
   font-size: 17px;
   line-height: 1.45;
@@ -293,18 +282,36 @@ textarea { font: inherit; }
 
 .feed-actions {
   display: flex;
-  gap: 16px;
-  align-items: flex-end;
-}
-
-.feed-actions > .primary-action {
-  min-width: 0;
-  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
 .feed-actions .feed-like {
-  width: 94px;
-  flex: 0 0 94px;
+  width: 100%;
+}
+
+.feed-next {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  transition: filter .2s ease;
+}
+
+.feed-next:hover { filter: brightness(.94); }
+
+.feed-next svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .button {
@@ -554,18 +561,19 @@ textarea { font: inherit; }
 .operand-range__dot {
   position: absolute;
   z-index: 1;
-  top: 10px;
-  width: 7px;
-  height: 7px;
+  top: 7px;
+  width: 15px;
+  height: 15px;
   transform: translateX(-50%);
+  border: 3px solid #f4f4f5;
   border-radius: 50%;
   background: #d8d9df;
 }
 
 .operand-range__dot.active { background: var(--color-accent); }
 .operand-range__dot--0 { left: 11px; }
-.operand-range__dot--1 { left: calc(11px + (100% - 22px) / 3); }
-.operand-range__dot--2 { left: calc(11px + (100% - 22px) * 2 / 3); }
+.operand-range__dot--1 { left: calc(33.333% + 3.667px); }
+.operand-range__dot--2 { left: calc(66.667% - 3.667px); }
 .operand-range__dot--3 { left: calc(100% - 11px); }
 
 .range-labels {
@@ -647,16 +655,16 @@ textarea { font: inherit; }
   width: 100%;
   padding: 8px 10px;
   margin-top: 12px;
-  border: 1px solid #d65757;
+  border: 0;
   border-radius: 10px;
-  background: #fff;
-  color: #a12b2b;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
 
-.instruction-card__delete:hover { background: #fff0f0; }
+.instruction-card__delete:hover { filter: brightness(.94); }
 
 .instruction-empty {
   grid-column: 1 / -1;
