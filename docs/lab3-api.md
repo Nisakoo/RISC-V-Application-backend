@@ -2,19 +2,19 @@
 
 Запуск из корня проекта: `make lab3-run`. Команда поднимает PostgreSQL и MinIO, применяет миграции и запускает Go-сервер на `http://localhost:8080`.
 
-Все методы возвращают JSON. Успешный ответ содержит `status: "success"`, ошибочный — `status: "fail"` и понятное `message`. До лабораторной работы №4 пользователь определяется функцией `CurrentUserID` и имеет идентификатор `1`.
+Результат операции передаётся только HTTP-кодом, поле `status` в тело ответа не добавляется. Успешный ответ содержит сами данные: объект команды, массив команд или объект результата; удаление возвращает `204 No Content` без тела. Ошибочный ответ содержит только понятное `message`. До лабораторной работы №4 пользователь определяется функцией `CurrentUserID` и имеет идентификатор `1`.
 
 ## Методы
 
 | Метод | URL | Данные запроса | Результат |
 | --- | --- | --- | --- |
 | GET | `/api/riscv_commands` | `min_operands`, `max_operands` (0–3) | Опубликованные команды, `is_creator` 0/1 |
-| GET | `/api/riscv_commands/feed` | `id` (необязательно), `next=true` вместе с `id` | Опубликованная команда и `next_id` |
+| GET | `/api/riscv_commands/feed` | `id` (необязательно), `next=true` вместе с `id` | Опубликованная команда с полем `next_id` |
 | GET | `/api/riscv_commands/draft` | Без идентификатора | Черновик текущего пользователя |
 | POST | `/api/riscv_commands` | `multipart/form-data`: `mnemonic`, файлы `image`, `video` | Созданный черновик, 201 |
 | PUT | `/api/riscv_commands/{id}/publish` | JSON: `description`, `operand_count`, `length_bits` | Опубликованная команда |
-| DELETE | `/api/riscv_commands/{id}` | Без тела | Логическое удаление своей команды |
-| POST | `/api/riscv_commands/{id}/like` | JSON: `{"like": 0}` или `{"like": 1}` | Текущее число лайков |
+| DELETE | `/api/riscv_commands/{id}` | Без тела | Логическое удаление своей команды, 204 без тела |
+| POST | `/api/riscv_commands/{id}/like` | JSON: `{"like": 0}` или `{"like": 1}` | `like` и текущее число лайков `like_count` |
 | POST | `/api/users` | JSON: `login`, `password` | Новый пользователь без пароля, 201 |
 | POST | `/api/users/authentication` | Заглушка ЛР4 | Сообщение о следующем этапе |
 | POST | `/api/users/logout` | Заглушка ЛР4 | Сообщение о следующем этапе |

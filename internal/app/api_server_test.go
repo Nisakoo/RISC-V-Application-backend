@@ -100,11 +100,11 @@ func TestLabThreeAPIHidesDeletedAndValidatesInput(t *testing.T) {
 		contains, absent   string
 	}{
 		{http.MethodGet, "/api/riscv_commands", "", 200, `"mnemonic":"ADD"`, `"mnemonic":"OR"`},
-		{http.MethodGet, "/api/riscv_commands/feed?id=3", "", 404, `"status":"fail"`, ""},
-		{http.MethodGet, "/api/riscv_commands/feed?id=-1", "", 400, `"status":"fail"`, ""},
-		{http.MethodPost, "/api/riscv_commands/1/like", `{"like":2}`, 400, `"status":"fail"`, ""},
-		{http.MethodPut, "/api/riscv_commands/1/publish", `{"description":"Достаточное описание","operand_count":3,"length_bits":32,"creator_id":2}`, 400, `"status":"fail"`, ""},
-		{http.MethodDelete, "/api/riscv_commands/2", "", 404, `"status":"fail"`, ""},
+		{http.MethodGet, "/api/riscv_commands/feed?id=3", "", 404, `"message":`, `"status"`},
+		{http.MethodGet, "/api/riscv_commands/feed?id=-1", "", 400, `"message":`, `"status"`},
+		{http.MethodPost, "/api/riscv_commands/1/like", `{"like":2}`, 400, `"message":`, `"status"`},
+		{http.MethodPut, "/api/riscv_commands/1/publish", `{"description":"Достаточное описание","operand_count":3,"length_bits":32,"creator_id":2}`, 400, `"message":`, `"status"`},
+		{http.MethodDelete, "/api/riscv_commands/2", "", 404, `"message":`, `"status"`},
 	}
 	for _, test := range cases {
 		request := httptest.NewRequest(test.method, test.path, strings.NewReader(test.body))
@@ -112,6 +112,32 @@ func TestLabThreeAPIHidesDeletedAndValidatesInput(t *testing.T) {
 		server.router.ServeHTTP(response, request)
 		if response.Code != test.status || !strings.Contains(response.Body.String(), test.contains) || (test.absent != "" && strings.Contains(response.Body.String(), test.absent)) {
 			t.Errorf("%s %s: код %d, тело %s", test.method, test.path, response.Code, response.Body.String())
+		}
+	}
+}
+
+func TestLabThreeAPIReturnsDataWithoutStatusWrapper(t *testing.T) {
+	server := newAPITestServer()
+	cases := []struct {
+		method, path, body string
+		status             int
+		prefix, contains   string
+	}{
+		{http.MethodGet, "/api/riscv_commands", "", 200, `[{`, `"is_creator":1`},
+		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"next_id":2`},
+		{http.MethodPost, "/api/riscv_commands/1/like", `{"like":1}`, 200, `{"like":1`, `"like_count":1`},
+		{http.MethodDelete, "/api/riscv_commands/1", "", 204, ``, ``},
+	}
+	for _, test := range cases {
+		request := httptest.NewRequest(test.method, test.path, strings.NewReader(test.body))
+		response := httptest.NewRecorder()
+		server.router.ServeHTTP(response, request)
+		body := response.Body.String()
+		if response.Code != test.status || !strings.HasPrefix(body, test.prefix) || !strings.Contains(body, test.contains) || strings.Contains(body, `"data"`) || strings.Contains(body, `"success"`) {
+			t.Errorf("%s %s: код %d, тело %s", test.method, test.path, response.Code, body)
+		}
+		if test.status == http.StatusNoContent && body != "" {
+			t.Errorf("%s %s: ответ 204 должен быть без тела, получено %s", test.method, test.path, body)
 		}
 	}
 }

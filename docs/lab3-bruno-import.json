@@ -46,8 +46,8 @@
             "type": "text/javascript",
             "exec": [
               "const response = res.getBody();",
-              "if (response.data && response.data.id) {",
-              "    bru.setVar(\"command_id\", response.data.id);",
+              "if (response && response.id) {",
+              "    bru.setVar(\"command_id\", response.id);",
               "}"
             ]
           }
@@ -68,8 +68,8 @@
             "type": "text/javascript",
             "exec": [
               "const response = res.getBody();",
-              "if (response.data && response.data.id) {",
-              "    bru.setVar(\"command_id\", response.data.id);",
+              "if (response && response.id) {",
+              "    bru.setVar(\"command_id\", response.id);",
               "}"
             ]
           }
