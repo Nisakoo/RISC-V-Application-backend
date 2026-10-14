@@ -125,11 +125,7 @@ func (repository *RiscVCommandRepository) CreateDraft(ctx context.Context, creat
 		CreatorID: creatorID,
 		CreatedAt: time.Now().UTC(),
 	}
-	omittedFields := []string{"Description", "OperandCount", "LengthBits"}
-	if input.ImageKey == "" && input.VideoKey == "" {
-		omittedFields = append(omittedFields, "ImageKey", "VideoKey")
-	}
-	query := repository.db.WithContext(ctx).Omit(omittedFields...)
+	query := repository.db.WithContext(ctx).Omit("Description", "OperandCount", "LengthBits")
 	if err := query.Create(&record).Error; err != nil {
 		var postgresError *pgconn.PgError
 		if errors.As(err, &postgresError) && postgresError.Code == "23505" {

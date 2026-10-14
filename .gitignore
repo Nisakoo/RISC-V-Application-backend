@@ -1,3 +1,9 @@
 docker/.env
 bin/
 tmp/
+
+# Резервные копии draw.io
+*.bkp
+.$*
+# Файлы блокировки Microsoft Office
+~$*
