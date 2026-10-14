@@ -49,11 +49,19 @@ func (service *RiscVAPIService) List(ctx context.Context, minimum, maximum int) 
 	return commands, err
 }
 
-// Feed возвращает команду ленты, следующую команду и признак лайка текущего пользователя
-func (service *RiscVAPIService) Feed(ctx context.Context, id *int64) (domain.RiscVCommand, domain.RiscVCommand, bool, error) {
+// Feed возвращает команду ленты, следующую команду и признак лайка текущего пользователя.
+// При next=true возвращается команда, следующая за указанным id.
+func (service *RiscVAPIService) Feed(ctx context.Context, id *int64, next bool) (domain.RiscVCommand, domain.RiscVCommand, bool, error) {
 	command, following, err := service.commands.GetFeedRiscVCommand(ctx, id)
 	if err != nil {
 		return domain.RiscVCommand{}, domain.RiscVCommand{}, false, err
+	}
+	if next && id != nil {
+		command = following
+		following, err = service.repository.GetNextVisible(ctx, command.ID)
+		if err != nil {
+			return domain.RiscVCommand{}, domain.RiscVCommand{}, false, err
+		}
 	}
 	liked, err := service.repository.IsLiked(ctx, command.ID, CurrentUserID())
 	if err != nil {

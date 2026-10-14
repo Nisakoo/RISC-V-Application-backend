@@ -40,7 +40,7 @@ curl -i 'http://localhost:8080/api/riscv_commands/feed'
 ## 7
 
 ```bash
-curl -i "http://localhost:8080/api/riscv_commands/feed?id=$RISC_V_COMMAND_ID"
+curl -i "http://localhost:8080/api/riscv_commands/feed?id=$RISC_V_COMMAND_ID&next=true"
 ```
 
 ## 8

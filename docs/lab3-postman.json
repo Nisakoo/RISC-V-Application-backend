@@ -89,7 +89,27 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/riscv_commands/feed?id={{feed_command_id}}"
+        "url": {
+          "raw": "{{base_url}}/api/riscv_commands/feed?id={{feed_command_id}}&next=true",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "riscv_commands",
+            "feed"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "{{feed_command_id}}"
+            },
+            {
+              "key": "next",
+              "value": "true"
+            }
+          ]
+        }
       },
       "event": [
         {
@@ -98,9 +118,9 @@
             "type": "text/javascript",
             "exec": [
               "const response = pm.response.json();",
-              "// Следующий запуск запроса откроет следующую команду ленты",
-              "if (response && response.next_id) {",
-              "    pm.collectionVariables.set(\"feed_command_id\", response.next_id);",
+              "// Следующий запуск запроса с next=true откроет команду после полученной",
+              "if (response && response.id) {",
+              "    pm.collectionVariables.set(\"feed_command_id\", response.id);",
               "}"
             ]
           }
@@ -215,7 +235,7 @@
     },
     {
       "key": "feed_command_id",
-      "value": ""
+      "value": "1"
     },
     {
       "key": "new_login",
