@@ -262,7 +262,7 @@ func newTestServer() (*Server, *applicationRepository) {
 	media := applicationMedia{}
 	riscvCommandService := service.NewRiscVCommandService(fakeRepository)
 	riscvCommandHandler := handler.NewRiscVCommandHandler(riscvCommandService, media)
-	return NewServer(":0", riscvCommandHandler), fakeRepository
+	return NewServer(":0", riscvCommandHandler, nil), fakeRepository
 }
 
 func TestMain(testingMain *testing.M) {

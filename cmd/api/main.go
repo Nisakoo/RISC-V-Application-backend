@@ -15,6 +15,15 @@ import (
 	"riscv-lab/internal/storage"
 )
 
+// @title                       API команд RISC-V
+// @version                     1.0
+// @description                 Веб-сервис каталога команд RISC-V: лента, черновики, публикация, лайки и пользователи. Без JWT доступно только чтение списка и ленты.
+// @BasePath                    /
+// @schemes                     http
+// @securityDefinitions.apikey  BearerAuth
+// @in                          header
+// @name                        Authorization
+// @description                 JWT доступа в формате «Bearer <token>» из ответа POST /api/users/authentication.
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -52,9 +61,21 @@ func main() {
 	riscvCommandRepository := repository.NewRiscVCommandRepository(database)
 	riscvCommandService := service.NewRiscVCommandService(riscvCommandRepository)
 	riscvCommandHandler := handler.NewRiscVCommandHandler(riscvCommandService, mediaStorage)
+	redisContext, cancelRedis := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelRedis()
+	tokenBlacklist, err := storage.NewRedisTokenBlacklist(redisContext, applicationConfig.RedisAddress, applicationConfig.RedisPassword)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tokenBlacklist.Close()
+
 	riscvAPIService := service.NewRiscVAPIService(riscvCommandRepository)
-	riscvAPIHandler := handler.NewRiscVAPIHandler(riscvAPIService, mediaStorage)
-	server := app.NewServer(applicationConfig.ServerAddress, riscvCommandHandler, riscvAPIHandler)
+	userService := service.NewUserService(riscvCommandRepository, tokenBlacklist, applicationConfig.JWTSecret, applicationConfig.JWTTTL)
+	server := app.NewServer(applicationConfig.ServerAddress, riscvCommandHandler, &app.API{
+		RiscVCommands: handler.NewRiscVAPIHandler(riscvAPIService, mediaStorage),
+		Users:         handler.NewUserAPIHandler(userService),
+		Tokens:        userService,
+	})
 
 	if err := server.Run(ctx); err != nil {
 		log.Fatal(err)
