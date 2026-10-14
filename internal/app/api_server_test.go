@@ -111,6 +111,7 @@ func TestLabThreeAPIHidesDeletedAndValidatesInput(t *testing.T) {
 		{http.MethodGet, "/api/riscv_commands", "", 200, `"mnemonic":"ADD"`, `"mnemonic":"OR"`},
 		{http.MethodGet, "/api/riscv_commands/feed?id=3", "", 404, `"message":`, `"status"`},
 		{http.MethodGet, "/api/riscv_commands/feed?id=-1", "", 400, `"message":`, `"status"`},
+		{http.MethodGet, "/api/riscv_commands/feed?next=true", "", 400, `"message":`, `"status"`},
 		{http.MethodPost, "/api/riscv_commands/1/like", `{"like":2}`, 400, `"message":`, `"status"`},
 		{http.MethodPut, "/api/riscv_commands/1/publish", `{"description":"Достаточное описание","operand_count":3,"length_bits":32,"creator_id":2}`, 400, `"message":`, `"status"`},
 		{http.MethodDelete, "/api/riscv_commands/2", "", 404, `"message":`, `"status"`},
@@ -136,6 +137,7 @@ func TestLabThreeAPIReturnsDataWithoutStatusWrapper(t *testing.T) {
 		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"is_liked":0,"next_id":2`},
 		{http.MethodPost, "/api/riscv_commands/1/like", `{"like":1}`, 200, `{"like":1`, `"like_count":1`},
 		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"is_liked":1,"next_id":2`},
+		{http.MethodGet, "/api/riscv_commands/feed?id=1&next=true", "", 200, `{"id":2`, `"is_liked":0`},
 		{http.MethodDelete, "/api/riscv_commands/1", "", 204, ``, ``},
 	}
 	for _, test := range cases {

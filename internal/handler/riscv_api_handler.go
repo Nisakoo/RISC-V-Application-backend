@@ -149,7 +149,16 @@ func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
 		}
 		id = &parsed
 	}
-	command, following, liked, err := handler.service.Feed(context.Request.Context(), id)
+	next := false
+	if value := context.Query("next"); value != "" {
+		var err error
+		next, err = strconv.ParseBool(value)
+		if err != nil || (next && id == nil) {
+			apiFailure(context, http.StatusBadRequest, "Для перехода к следующей команде укажите id и next=true.")
+			return
+		}
+	}
+	command, following, liked, err := handler.service.Feed(context.Request.Context(), id, next)
 	if errors.Is(err, service.ErrRiscVCommandNotFound) {
 		apiFailure(context, http.StatusNotFound, "Команда RISC-V не найдена.")
 		return
