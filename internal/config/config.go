@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -19,7 +20,14 @@ type Config struct {
 	MinIOBucket        string
 	MinIOUseSSL        bool
 	MinIOPublicBaseURL string
+	RedisAddress       string
+	RedisPassword      string
+	JWTSecret          []byte
+	JWTTTL             time.Duration
 }
+
+// minimumJWTSecretLength задаёт минимальную длину секрета подписи HS256
+const minimumJWTSecretLength = 32
 
 func Load() (Config, error) {
 	// Локальный файл необязателен: в контейнерах значения передаются окружением.
@@ -28,6 +36,7 @@ func Load() (Config, error) {
 	required := []string{
 		"DB_HOST", "DB_PORT", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD",
 		"MINIO_ENDPOINT", "MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD", "MINIO_BUCKET", "MINIO_PUBLIC_BASE_URL",
+		"REDIS_HOST", "REDIS_PORT", "REDIS_PASSWORD", "JWT_SECRET",
 	}
 	missing := make([]string, 0)
 	for _, name := range required {
@@ -37,6 +46,15 @@ func Load() (Config, error) {
 	}
 	if len(missing) > 0 {
 		return Config{}, fmt.Errorf("не заданы переменные окружения: %s", strings.Join(missing, ", "))
+	}
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if len(jwtSecret) < minimumJWTSecretLength {
+		return Config{}, fmt.Errorf("JWT_SECRET должен содержать не менее %d символов", minimumJWTSecretLength)
+	}
+	jwtTTL, err := time.ParseDuration(environmentOrDefault("JWT_TTL", "1h"))
+	if err != nil || jwtTTL <= 0 {
+		return Config{}, fmt.Errorf("JWT_TTL должен быть положительной длительностью, например 1h")
 	}
 
 	databaseURL := &url.URL{
@@ -58,6 +76,10 @@ func Load() (Config, error) {
 		MinIOBucket:        os.Getenv("MINIO_BUCKET"),
 		MinIOUseSSL:        strings.EqualFold(os.Getenv("MINIO_USE_SSL"), "true"),
 		MinIOPublicBaseURL: strings.TrimRight(os.Getenv("MINIO_PUBLIC_BASE_URL"), "/"),
+		RedisAddress:       net.JoinHostPort(os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
+		RedisPassword:      os.Getenv("REDIS_PASSWORD"),
+		JWTSecret:          []byte(jwtSecret),
+		JWTTTL:             jwtTTL,
 	}, nil
 }
 

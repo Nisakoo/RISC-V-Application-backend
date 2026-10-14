@@ -20,6 +20,13 @@ func TestRiscVAPIRepositoryLifecycleAndOwnership(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	user, err := repository.GetUserByLogin(ctx, ownerLogin)
+	if err != nil || user.ID != ownerID || user.PasswordHash != "test-hash" || user.Role != domain.UserRoleUser {
+		t.Fatalf("пользователь по логину: %+v err=%v", user, err)
+	}
+	if _, err := repository.GetUserByLogin(ctx, ownerLogin+"_missing"); !errors.Is(err, ErrUserNotFound) {
+		t.Fatalf("отсутствующий логин: %v", err)
+	}
 	draft, err := repository.CreateDraft(ctx, ownerID, domain.CreateRiscVCommandDraft{
 		Mnemonic: "XORI", ImageKey: "images/test.png", VideoKey: "video/test.mp4",
 	})

@@ -1,22 +1,93 @@
 {
   "info": {
-    "name": "ЛР3 — команды RISC-V",
+    "name": "ЛР4 — команды RISC-V с JWT",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "01 Список команд с фильтром",
+      "name": "01 Зарегистрировать пользователя",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/users",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"login\": \"{{login}}\", \"password\": \"{{password}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "02 Аутентификация",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/users/authentication",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"login\": \"{{login}}\", \"password\": \"{{password}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const response = res.getBody();",
+              "// JWT подставляется вручную в заголовок Authorization остальных запросов",
+              "if (response && response.access_token) {",
+              "    bru.setVar(\"access_token\", response.access_token);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Список команд с фильтром",
       "request": {
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
         "url": "{{base_url}}/api/riscv_commands?min_operands=2&max_operands=3"
       }
     },
     {
-      "name": "02 Создать черновик с медиа",
+      "name": "04 Создать черновик с медиа",
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
         "url": "{{base_url}}/api/riscv_commands",
         "body": {
           "mode": "formdata",
@@ -55,10 +126,16 @@
       ]
     },
     {
-      "name": "03 Получить черновик",
+      "name": "05 Получить черновик",
       "request": {
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
         "url": "{{base_url}}/api/riscv_commands/draft"
       },
       "event": [
@@ -77,10 +154,15 @@
       ]
     },
     {
-      "name": "04 Опубликовать черновик",
+      "name": "06 Опубликовать черновик",
       "request": {
         "method": "PUT",
         "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
           {
             "key": "Content-Type",
             "value": "application/json"
@@ -99,10 +181,16 @@
       }
     },
     {
-      "name": "05 Лента команд",
+      "name": "07 Лента команд",
       "request": {
         "method": "GET",
-        "header": [],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
         "url": {
           "raw": "{{base_url}}/api/riscv_commands/feed?id={{feed_command_id}}&next=true",
           "host": [
@@ -142,10 +230,15 @@
       ]
     },
     {
-      "name": "06 Поставить лайк",
+      "name": "08 Поставить лайк",
       "request": {
         "method": "POST",
         "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          },
           {
             "key": "Content-Type",
             "value": "application/json"
@@ -164,77 +257,31 @@
       }
     },
     {
-      "name": "07 Удалить свою команду",
+      "name": "09 Удалить свою команду",
       "request": {
         "method": "DELETE",
-        "header": [],
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
+          }
+        ],
         "url": "{{base_url}}/api/riscv_commands/{{command_id}}"
       }
     },
     {
-      "name": "08 Зарегистрировать пользователя",
+      "name": "10 Деавторизация",
       "request": {
         "method": "POST",
         "header": [
           {
-            "key": "Content-Type",
-            "value": "application/json"
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}",
+            "type": "text"
           }
         ],
-        "url": "{{base_url}}/api/users",
-        "body": {
-          "mode": "raw",
-          "raw": "{\"login\": \"{{new_login}}\", \"password\": \"{{registration_password}}\"}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "09 Аутентификация: заглушка",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{base_url}}/api/users/authentication",
-        "body": {
-          "mode": "raw",
-          "raw": "{}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "10 Деавторизация: заглушка",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{base_url}}/api/users/logout",
-        "body": {
-          "mode": "raw",
-          "raw": "{}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
+        "url": "{{base_url}}/api/users/logout"
       }
     }
   ],
@@ -244,20 +291,24 @@
       "value": "http://localhost:8080"
     },
     {
+      "key": "login",
+      "value": "rv32_author"
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
       "key": "command_id",
       "value": ""
     },
     {
       "key": "feed_command_id",
       "value": "1"
-    },
-    {
-      "key": "new_login",
-      "value": "riscv_new_author"
-    },
-    {
-      "key": "registration_password",
-      "value": ""
     },
     {
       "key": "image_path",

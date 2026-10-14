@@ -12,7 +12,10 @@ import (
 	"riscv-lab/internal/domain"
 )
 
-var ErrLoginAlreadyExists = errors.New("пользователь с таким логином уже существует")
+var (
+	ErrLoginAlreadyExists = errors.New("пользователь с таким логином уже существует")
+	ErrUserNotFound       = errors.New("пользователь не найден")
+)
 
 type userRecord struct {
 	ID           int64  `gorm:"primaryKey;column:id"`
@@ -82,8 +85,20 @@ type riscvCommandLikeRecord struct {
 
 func (riscvCommandLikeRecord) TableName() string { return "riscv_command_likes" }
 
+// GetUserByLogin возвращает пользователя с хешем пароля для аутентификации
+func (repository *RiscVCommandRepository) GetUserByLogin(ctx context.Context, login string) (domain.User, error) {
+	var user userRecord
+	if err := repository.db.WithContext(ctx).Where("login = ?", login).Take(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return domain.User{}, ErrUserNotFound
+		}
+		return domain.User{}, fmt.Errorf("получение пользователя: %w", err)
+	}
+	return domain.User{ID: user.ID, Login: user.Login, PasswordHash: user.PasswordHash, Role: domain.UserRole(user.Role)}, nil
+}
+
 func (repository *RiscVCommandRepository) RegisterUser(ctx context.Context, login, passwordHash string) (int64, error) {
-	user := userRecord{Login: login, PasswordHash: passwordHash, Role: "user"}
+	user := userRecord{Login: login, PasswordHash: passwordHash, Role: string(domain.UserRoleUser)}
 	if err := repository.db.WithContext(ctx).Create(&user).Error; err != nil {
 		var postgresError *pgconn.PgError
 		if errors.As(err, &postgresError) && postgresError.Code == "23505" {

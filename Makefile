@@ -6,16 +6,17 @@ COMPOSE_ENV := docker/.env
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install infra-up infra-down migrate-up migrate-down run format test test-backend test-media
+.PHONY: help install infra-up infra-down migrate-up migrate-down run swagger format test test-backend test-media
 
 help:
 	@echo "Доступные команды:"
 	@echo "  make install        Установить зависимости Go"
-	@echo "  make infra-up       Запустить PostgreSQL, Adminer и MinIO"
+	@echo "  make infra-up       Запустить PostgreSQL, Adminer, Redis и MinIO"
 	@echo "  make infra-down     Остановить локальную инфраструктуру"
 	@echo "  make migrate-up     Применить миграции PostgreSQL"
 	@echo "  make migrate-down   Откатить последнюю миграцию PostgreSQL"
-	@echo "  make run            Запустить вторую лабораторную на :8080"
+	@echo "  make run            Запустить веб-сервис на :8080"
+	@echo "  make swagger        Сгенерировать спецификацию Swagger"
 	@echo "  make format         Отформатировать Go-код"
 	@echo "  make test-backend   Проверить форматирование, go vet и Go-тесты"
 	@echo "  make test-media     Проверить доступность медиа в MinIO"
@@ -26,7 +27,7 @@ install:
 
 infra-up:
 	test -f $(COMPOSE_ENV) || (echo "Создайте $(COMPOSE_ENV) на основе docker/.env.example" && exit 1)
-	docker compose --env-file $(COMPOSE_ENV) -f $(COMPOSE_FILE) up -d postgres adminer minio
+	docker compose --env-file $(COMPOSE_ENV) -f $(COMPOSE_FILE) up -d --wait postgres adminer redis minio
 	docker compose --env-file $(COMPOSE_ENV) -f $(COMPOSE_FILE) run --rm minio-setup
 
 infra-down:
@@ -40,6 +41,9 @@ migrate-down: infra-up
 
 run: migrate-up
 	set -a; . $(COMPOSE_ENV); set +a; go run ./cmd/api
+
+swagger:
+	go run github.com/swaggo/swag/cmd/swag@v1.16.4 init -g cmd/api/main.go -o docs/swagger --parseInternal --outputTypes go,json,yaml
 
 format:
 	gofmt -w $$(find . -path ./.git -prune -o -type f -name '*.go' -print)

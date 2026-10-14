@@ -1,0 +1,606 @@
+basePath: /
+definitions:
+  domain.PublishRiscVCommandDraft:
+    properties:
+      description:
+        type: string
+      length_bits:
+        type: integer
+      operand_count:
+        type: integer
+    type: object
+  domain.RiscVCommandStatus:
+    enum:
+    - draft
+    - published
+    - deleted
+    type: string
+    x-enum-varnames:
+    - RiscVCommandDraft
+    - RiscVCommandPublished
+    - RiscVCommandDeleted
+  domain.UserRole:
+    enum:
+    - user
+    - moderator
+    type: string
+    x-enum-varnames:
+    - UserRoleUser
+    - UserRoleModerator
+  handler.apiAuthentication:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        example: 3600
+        type: integer
+      login:
+        example: rv32_author
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/domain.UserRole'
+        enum:
+        - user
+        - moderator
+        example: user
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+  handler.apiCommand:
+    properties:
+      created_at:
+        type: string
+      creator_login:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_key:
+        type: string
+      image_url:
+        type: string
+      length_bits:
+        type: integer
+      like_count:
+        type: integer
+      mnemonic:
+        type: string
+      operand_count:
+        type: integer
+      published_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.RiscVCommandStatus'
+      video_key:
+        type: string
+      video_url:
+        type: string
+    type: object
+  handler.apiCredentials:
+    properties:
+      login:
+        example: rv32_author
+        type: string
+      password:
+        example: correct-horse-battery
+        type: string
+    type: object
+  handler.apiErrorResponse:
+    properties:
+      message:
+        example: Команда RISC-V не найдена.
+        type: string
+    type: object
+  handler.apiFeedCommand:
+    properties:
+      created_at:
+        type: string
+      creator_login:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_key:
+        type: string
+      image_url:
+        type: string
+      is_liked:
+        type: integer
+      length_bits:
+        type: integer
+      like_count:
+        type: integer
+      mnemonic:
+        type: string
+      next_id:
+        type: integer
+      operand_count:
+        type: integer
+      published_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.RiscVCommandStatus'
+      video_key:
+        type: string
+      video_url:
+        type: string
+    type: object
+  handler.apiLikeRequest:
+    properties:
+      like:
+        enum:
+        - 0
+        - 1
+        example: 1
+        type: integer
+    type: object
+  handler.apiLikeResponse:
+    properties:
+      like:
+        example: 1
+        type: integer
+      like_count:
+        example: 4
+        type: integer
+    type: object
+  handler.apiListCommand:
+    properties:
+      created_at:
+        type: string
+      creator_login:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_key:
+        type: string
+      image_url:
+        type: string
+      is_creator:
+        type: integer
+      length_bits:
+        type: integer
+      like_count:
+        type: integer
+      mnemonic:
+        type: string
+      operand_count:
+        type: integer
+      published_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.RiscVCommandStatus'
+      video_key:
+        type: string
+      video_url:
+        type: string
+    type: object
+  handler.apiRegisteredUser:
+    properties:
+      id:
+        example: 7
+        type: integer
+      login:
+        example: rv32_author
+        type: string
+    type: object
+info:
+  contact: {}
+  description: 'Веб-сервис каталога команд RISC-V: лента, черновики, публикация, лайки
+    и пользователи. Без JWT доступно только чтение списка и ленты.'
+  title: API команд RISC-V
+  version: "1.0"
+paths:
+  /api/riscv_commands:
+    get:
+      description: Возвращает опубликованные команды с фильтрацией по количеству операндов.
+        Доступен гостю; для аутентифицированного пользователя is_creator = 1 у его
+        команд.
+      parameters:
+      - description: Минимальное количество операндов
+        in: query
+        maximum: 3
+        minimum: 0
+        name: min_operands
+        type: integer
+      - description: Максимальное количество операндов
+        in: query
+        maximum: 3
+        minimum: 0
+        name: max_operands
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.apiListCommand'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Список опубликованных команд RISC-V
+      tags:
+      - riscv_commands
+    post:
+      consumes:
+      - multipart/form-data
+      description: Создаёт черновик из мнемоники, изображения и короткого видео. Файлы
+        сохраняются в MinIO под латинскими именами, создатель определяется по JWT.
+      parameters:
+      - description: Мнемоника команды RISC-V
+        example: XORI
+        in: formData
+        name: mnemonic
+        required: true
+        type: string
+      - description: Изображение PNG, JPEG или WebP до 5 МиБ
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: Короткое видео MP4 до 50 МиБ
+        in: formData
+        name: video
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.apiCommand'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создание черновика команды RISC-V
+      tags:
+      - riscv_commands
+  /api/riscv_commands/{id}:
+    delete:
+      description: Меняет статус собственной команды пользователя на deleted.
+      parameters:
+      - description: Идентификатор команды
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Логическое удаление команды RISC-V
+      tags:
+      - riscv_commands
+  /api/riscv_commands/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: like = 1 ставит лайк от текущего пользователя, like = 0 отменяет
+        его.
+      parameters:
+      - description: Идентификатор команды
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: Признак лайка 0/1
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.apiLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.apiLikeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Лайк опубликованной команды RISC-V
+      tags:
+      - riscv_commands
+  /api/riscv_commands/{id}/publish:
+    put:
+      consumes:
+      - application/json
+      description: Заполняет описание и поля команды и меняет статус черновика текущего
+        пользователя на published. Системные поля передавать запрещено.
+      parameters:
+      - description: Идентификатор черновика
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      - description: Поля публикации
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/domain.PublishRiscVCommandDraft'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.apiCommand'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Публикация черновика команды RISC-V
+      tags:
+      - riscv_commands
+  /api/riscv_commands/draft:
+    get:
+      description: Возвращает единственный черновик пользователя, определённого по
+        JWT; идентификатор не передаётся.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.apiCommand'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Черновик команды RISC-V текущего пользователя
+      tags:
+      - riscv_commands
+  /api/riscv_commands/feed:
+    get:
+      description: Без id возвращает первую команду ленты, с id — указанную, с id
+        и next=true — следующую после неё. Доступна гостю; is_liked = 1, если аутентифицированный
+        пользователь поставил лайк.
+      parameters:
+      - description: Идентификатор команды RISC-V
+        in: query
+        minimum: 1
+        name: id
+        type: integer
+      - description: Вернуть следующую команду после id
+        in: query
+        name: next
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.apiFeedCommand'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Лента опубликованных команд RISC-V
+      tags:
+      - riscv_commands
+  /api/users:
+    post:
+      consumes:
+      - application/json
+      description: 'Создаёт пользователя с ролью user. Логин: латиница, цифры и _,
+        3–64 символа; пароль: 8–72 символа.'
+      parameters:
+      - description: Логин и пароль
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.apiCredentials'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.apiRegisteredUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      summary: Регистрация пользователя
+      tags:
+      - users
+  /api/users/authentication:
+    post:
+      consumes:
+      - application/json
+      description: 'Проверяет логин и пароль и возвращает JWT доступа. Токен передаётся
+        в остальных запросах заголовком Authorization: Bearer <token>.'
+      parameters:
+      - description: Логин и пароль
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.apiCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.apiAuthentication'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      summary: Аутентификация пользователя
+      tags:
+      - users
+  /api/users/logout:
+    post:
+      description: Помещает текущий JWT в blacklist Redis до истечения его срока;
+        повторно использовать токен нельзя.
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Деавторизация пользователя
+      tags:
+      - users
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    description: JWT доступа в формате «Bearer <token>» из ответа POST /api/users/authentication.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

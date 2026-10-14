@@ -9,12 +9,12 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"riscv-lab/internal/domain"
+	"riscv-lab/internal/middleware"
 	"riscv-lab/internal/service"
 	"riscv-lab/internal/storage"
 )
@@ -84,8 +84,24 @@ func (handler *RiscVAPIHandler) serialize(ctx context.Context, command domain.Ri
 	}
 }
 
+// apiErrorResponse описывает ответ с ошибкой
+type apiErrorResponse struct {
+	Message string `json:"message" example:"Команда RISC-V не найдена."`
+}
+
+// apiLikeRequest описывает установку (1) или отмену (0) лайка
+type apiLikeRequest struct {
+	Like *int `json:"like" enums:"0,1" example:"1"`
+}
+
+// apiLikeResponse описывает результат изменения лайка
+type apiLikeResponse struct {
+	Like      int   `json:"like" example:"1"`
+	LikeCount int64 `json:"like_count" example:"4"`
+}
+
 func apiFailure(context *gin.Context, status int, message string) {
-	context.JSON(status, gin.H{"message": message})
+	context.JSON(status, apiErrorResponse{Message: message})
 }
 
 func apiInternalError(context *gin.Context, operation string, err error) {
@@ -115,6 +131,18 @@ func apiOperandCount(context *gin.Context, name string, fallback int) (int, bool
 	return count, true
 }
 
+// List godoc
+// @Summary      Список опубликованных команд RISC-V
+// @Description  Возвращает опубликованные команды с фильтрацией по количеству операндов. Доступен гостю; для аутентифицированного пользователя is_creator = 1 у его команд.
+// @Tags         riscv_commands
+// @Produce      json
+// @Param        min_operands  query     int  false  "Минимальное количество операндов"   minimum(0) maximum(3)
+// @Param        max_operands  query     int  false  "Максимальное количество операндов"  minimum(0) maximum(3)
+// @Success      200           {array}   apiListCommand
+// @Failure      400           {object}  apiErrorResponse
+// @Failure      500           {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands [get]
 func (handler *RiscVAPIHandler) List(context *gin.Context) {
 	minimum, ok := apiOperandCount(context, "min_operands", 0)
 	if !ok {
@@ -129,16 +157,30 @@ func (handler *RiscVAPIHandler) List(context *gin.Context) {
 		apiInternalError(context, "список команд RISC-V", err)
 		return
 	}
+	userID := middleware.CurrentUserID(context)
 	items := make([]apiListCommand, 0, len(commands))
 	for _, command := range commands {
 		items = append(items, apiListCommand{
 			apiCommand: handler.serialize(context.Request.Context(), command),
-			IsCreator:  apiFlag(command.CreatorID == service.CurrentUserID()),
+			IsCreator:  apiFlag(userID > 0 && command.CreatorID == userID),
 		})
 	}
 	context.JSON(http.StatusOK, items)
 }
 
+// Feed godoc
+// @Summary      Лента опубликованных команд RISC-V
+// @Description  Без id возвращает первую команду ленты, с id — указанную, с id и next=true — следующую после неё. Доступна гостю; is_liked = 1, если аутентифицированный пользователь поставил лайк.
+// @Tags         riscv_commands
+// @Produce      json
+// @Param        id    query     int   false  "Идентификатор команды RISC-V"  minimum(1)
+// @Param        next  query     bool  false  "Вернуть следующую команду после id"
+// @Success      200   {object}  apiFeedCommand
+// @Failure      400   {object}  apiErrorResponse
+// @Failure      404   {object}  apiErrorResponse
+// @Failure      500   {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands/feed [get]
 func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
 	var id *int64
 	if value := context.Query("id"); value != "" {
@@ -158,7 +200,7 @@ func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
 			return
 		}
 	}
-	command, following, liked, err := handler.service.Feed(context.Request.Context(), id, next)
+	command, following, liked, err := handler.service.Feed(context.Request.Context(), middleware.CurrentUserID(context), id, next)
 	if errors.Is(err, service.ErrRiscVCommandNotFound) {
 		apiFailure(context, http.StatusNotFound, "Команда RISC-V не найдена.")
 		return
@@ -174,8 +216,20 @@ func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
 	})
 }
 
+// Draft godoc
+// @Summary      Черновик команды RISC-V текущего пользователя
+// @Description  Возвращает единственный черновик пользователя, определённого по JWT; идентификатор не передаётся.
+// @Tags         riscv_commands
+// @Produce      json
+// @Success      200  {object}  apiCommand
+// @Failure      401  {object}  apiErrorResponse
+// @Failure      403  {object}  apiErrorResponse
+// @Failure      404  {object}  apiErrorResponse
+// @Failure      500  {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands/draft [get]
 func (handler *RiscVAPIHandler) Draft(context *gin.Context) {
-	command, err := handler.service.Draft(context.Request.Context())
+	command, err := handler.service.Draft(context.Request.Context(), middleware.CurrentUserID(context))
 	if errors.Is(err, service.ErrRiscVCommandNotFound) {
 		apiFailure(context, http.StatusNotFound, "Черновик команды RISC-V не найден.")
 		return
@@ -187,6 +241,23 @@ func (handler *RiscVAPIHandler) Draft(context *gin.Context) {
 	context.JSON(http.StatusOK, handler.serialize(context.Request.Context(), command))
 }
 
+// Create godoc
+// @Summary      Создание черновика команды RISC-V
+// @Description  Создаёт черновик из мнемоники, изображения и короткого видео. Файлы сохраняются в MinIO под латинскими именами, создатель определяется по JWT.
+// @Tags         riscv_commands
+// @Accept       mpfd
+// @Produce      json
+// @Param        mnemonic  formData  string  true  "Мнемоника команды RISC-V"  example(XORI)
+// @Param        image     formData  file    true  "Изображение PNG, JPEG или WebP до 5 МиБ"
+// @Param        video     formData  file    true  "Короткое видео MP4 до 50 МиБ"
+// @Success      201       {object}  apiCommand
+// @Failure      400       {object}  apiErrorResponse
+// @Failure      401       {object}  apiErrorResponse
+// @Failure      403       {object}  apiErrorResponse
+// @Failure      409       {object}  apiErrorResponse
+// @Failure      500       {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands [post]
 func (handler *RiscVAPIHandler) Create(context *gin.Context) {
 	context.Request.Body = http.MaxBytesReader(context.Writer, context.Request.Body, 56<<20)
 	if err := context.Request.ParseMultipartForm(8 << 20); err != nil {
@@ -231,7 +302,7 @@ func (handler *RiscVAPIHandler) Create(context *gin.Context) {
 		}
 		return
 	}
-	command, err := handler.service.Create(ctx, context.PostForm("mnemonic"), imageKey, videoKey)
+	command, err := handler.service.Create(ctx, middleware.CurrentUserID(context), context.PostForm("mnemonic"), imageKey, videoKey)
 	if err != nil {
 		_ = handler.media.Remove(ctx, imageKey)
 		_ = handler.media.Remove(ctx, videoKey)
@@ -263,6 +334,22 @@ func readAPIJSON(context *gin.Context, target any) error {
 	return nil
 }
 
+// Publish godoc
+// @Summary      Публикация черновика команды RISC-V
+// @Description  Заполняет описание и поля команды и меняет статус черновика текущего пользователя на published. Системные поля передавать запрещено.
+// @Tags         riscv_commands
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int                              true  "Идентификатор черновика"  minimum(1)
+// @Param        body  body      domain.PublishRiscVCommandDraft  true  "Поля публикации"
+// @Success      200   {object}  apiCommand
+// @Failure      400   {object}  apiErrorResponse
+// @Failure      401   {object}  apiErrorResponse
+// @Failure      403   {object}  apiErrorResponse
+// @Failure      404   {object}  apiErrorResponse
+// @Failure      500   {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands/{id}/publish [put]
 func (handler *RiscVAPIHandler) Publish(context *gin.Context) {
 	id, ok := apiID(context)
 	if !ok {
@@ -273,7 +360,7 @@ func (handler *RiscVAPIHandler) Publish(context *gin.Context) {
 		apiFailure(context, http.StatusBadRequest, "Некорректные поля публикации команды RISC-V.")
 		return
 	}
-	command, err := handler.service.Publish(context.Request.Context(), id, input)
+	command, err := handler.service.Publish(context.Request.Context(), middleware.CurrentUserID(context), id, input)
 	if errors.Is(err, service.ErrInvalidRiscVCommand) {
 		apiFailure(context, http.StatusBadRequest, err.Error())
 		return
@@ -289,12 +376,26 @@ func (handler *RiscVAPIHandler) Publish(context *gin.Context) {
 	context.JSON(http.StatusOK, handler.serialize(context.Request.Context(), command))
 }
 
+// Delete godoc
+// @Summary      Логическое удаление команды RISC-V
+// @Description  Меняет статус собственной команды пользователя на deleted.
+// @Tags         riscv_commands
+// @Produce      json
+// @Param        id   path      int  true  "Идентификатор команды"  minimum(1)
+// @Success      204
+// @Failure      400  {object}  apiErrorResponse
+// @Failure      401  {object}  apiErrorResponse
+// @Failure      403  {object}  apiErrorResponse
+// @Failure      404  {object}  apiErrorResponse
+// @Failure      500  {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands/{id} [delete]
 func (handler *RiscVAPIHandler) Delete(context *gin.Context) {
 	id, ok := apiID(context)
 	if !ok {
 		return
 	}
-	if err := handler.service.Delete(context.Request.Context(), id); err != nil {
+	if err := handler.service.Delete(context.Request.Context(), middleware.CurrentUserID(context), id); err != nil {
 		if errors.Is(err, service.ErrRiscVCommandNotFound) {
 			apiFailure(context, http.StatusNotFound, "Команда RISC-V не найдена среди команд пользователя.")
 			return
@@ -305,19 +406,33 @@ func (handler *RiscVAPIHandler) Delete(context *gin.Context) {
 	context.Status(http.StatusNoContent)
 }
 
+// Like godoc
+// @Summary      Лайк опубликованной команды RISC-V
+// @Description  like = 1 ставит лайк от текущего пользователя, like = 0 отменяет его.
+// @Tags         riscv_commands
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int             true  "Идентификатор команды"  minimum(1)
+// @Param        body  body      apiLikeRequest  true  "Признак лайка 0/1"
+// @Success      200   {object}  apiLikeResponse
+// @Failure      400   {object}  apiErrorResponse
+// @Failure      401   {object}  apiErrorResponse
+// @Failure      403   {object}  apiErrorResponse
+// @Failure      404   {object}  apiErrorResponse
+// @Failure      500   {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands/{id}/like [post]
 func (handler *RiscVAPIHandler) Like(context *gin.Context) {
 	id, ok := apiID(context)
 	if !ok {
 		return
 	}
-	var input struct {
-		Like *int `json:"like"`
-	}
+	var input apiLikeRequest
 	if err := readAPIJSON(context, &input); err != nil || input.Like == nil || (*input.Like != 0 && *input.Like != 1) {
 		apiFailure(context, http.StatusBadRequest, "Поле like должно равняться 0 или 1.")
 		return
 	}
-	count, err := handler.service.Like(context.Request.Context(), id, *input.Like == 1)
+	count, err := handler.service.Like(context.Request.Context(), middleware.CurrentUserID(context), id, *input.Like == 1)
 	if errors.Is(err, service.ErrRiscVCommandNotFound) {
 		apiFailure(context, http.StatusNotFound, "Опубликованная команда RISC-V не найдена.")
 		return
@@ -326,39 +441,5 @@ func (handler *RiscVAPIHandler) Like(context *gin.Context) {
 		apiInternalError(context, "лайк команды RISC-V", err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"like": *input.Like, "like_count": count})
-}
-
-func (handler *RiscVAPIHandler) Register(context *gin.Context) {
-	var input struct {
-		Login    string `json:"login"`
-		Password string `json:"password"`
-	}
-	if err := readAPIJSON(context, &input); err != nil {
-		apiFailure(context, http.StatusBadRequest, "Некорректные данные пользователя.")
-		return
-	}
-	input.Login = strings.TrimSpace(input.Login)
-	id, err := handler.service.Register(context.Request.Context(), input.Login, input.Password)
-	if errors.Is(err, service.ErrInvalidUser) {
-		apiFailure(context, http.StatusBadRequest, "Логин или пароль заполнены некорректно.")
-		return
-	}
-	if errors.Is(err, service.ErrLoginAlreadyExists) {
-		apiFailure(context, http.StatusConflict, "Пользователь с таким логином уже существует.")
-		return
-	}
-	if err != nil {
-		apiInternalError(context, "регистрация пользователя", err)
-		return
-	}
-	context.JSON(http.StatusCreated, gin.H{"id": id, "login": input.Login})
-}
-
-func (handler *RiscVAPIHandler) AuthenticationStub(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"message": "Аутентификация будет реализована в лабораторной работе №4."})
-}
-
-func (handler *RiscVAPIHandler) LogoutStub(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"message": "Деавторизация будет реализована в лабораторной работе №4."})
+	context.JSON(http.StatusOK, apiLikeResponse{Like: *input.Like, LikeCount: count})
 }
