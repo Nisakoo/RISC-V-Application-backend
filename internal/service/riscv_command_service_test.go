@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"riscv-lab/internal/domain"
@@ -59,7 +60,7 @@ func (fake *fakeRiscVCommandRepository) CreateDraft(_ context.Context, creatorID
 	if fake.draft != nil {
 		return domain.RiscVCommand{}, repository.ErrDraftAlreadyExists
 	}
-	command := domain.RiscVCommand{ID: 101, Mnemonic: input.Mnemonic, Status: domain.RiscVCommandDraft, CreatorID: creatorID, LengthBits: 0}
+	command := domain.RiscVCommand{ID: 101, Mnemonic: input.Mnemonic, ImageKey: input.ImageKey, VideoKey: input.VideoKey, Status: domain.RiscVCommandDraft, CreatorID: creatorID}
 	fake.draft = &command
 	fake.commands = append(fake.commands, command)
 	return command, nil
@@ -127,7 +128,7 @@ func TestRiscVCommandServiceCreatesAndPublishesDraft(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if draft.Mnemonic != "XOR" || draft.ImageKey != "" || draft.VideoKey != "" {
+	if draft.Mnemonic != "XOR" || !strings.HasPrefix(draft.ImageKey, "images/missing/") || !strings.HasPrefix(draft.VideoKey, "video/missing/") {
 		t.Fatalf("создан некорректный черновик: %+v", draft)
 	}
 

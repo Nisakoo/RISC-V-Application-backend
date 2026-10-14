@@ -1,3 +1,6 @@
 docker/.env
 bin/
 tmp/
+
+# Файлы блокировки Microsoft Office
+~$*

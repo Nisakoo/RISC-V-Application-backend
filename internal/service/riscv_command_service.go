@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/uuid"
+
 	"riscv-lab/internal/domain"
 	"riscv-lab/internal/repository"
 )
@@ -96,6 +98,15 @@ func (service *RiscVCommandService) CreateDraft(ctx context.Context, creatorID i
 	input.Mnemonic = strings.ToUpper(strings.TrimSpace(input.Mnemonic))
 	if !mnemonicPattern.MatchString(input.Mnemonic) {
 		return domain.RiscVCommand{}, fmt.Errorf("%w: мнемоника должна содержать от 2 до 16 латинских букв, цифр или точек", ErrInvalidRiscVCommand)
+	}
+
+	// url медиа обязательны. Если файлы не переданы (страница добавления SSR),
+	// сохраняются ключи несуществующих объектов: вместо них показываются медиа по умолчанию.
+	if input.ImageKey == "" {
+		input.ImageKey = "images/missing/" + uuid.NewString() + ".png"
+	}
+	if input.VideoKey == "" {
+		input.VideoKey = "video/missing/" + uuid.NewString() + ".mp4"
 	}
 
 	command, err := service.repository.CreateDraft(ctx, creatorID, input)
