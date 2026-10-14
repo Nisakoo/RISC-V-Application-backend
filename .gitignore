@@ -7,3 +7,6 @@ tmp/
 .$*
 # Файлы блокировки Microsoft Office
 ~$*
+
+# Служебные файлы macOS
+.DS_Store
