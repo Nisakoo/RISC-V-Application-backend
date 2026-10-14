@@ -34,6 +34,10 @@ func (fake *fakeAPIRepository) SetLike(_ context.Context, _ int64, _ int64, like
 	return 0, nil
 }
 
+func (fake *fakeAPIRepository) IsLiked(_ context.Context, _, _ int64) (bool, error) {
+	return false, nil
+}
+
 func (fake *fakeAPIRepository) RegisterUser(_ context.Context, login, passwordHash string) (int64, error) {
 	fake.registered = login
 	fake.passwordHash = passwordHash

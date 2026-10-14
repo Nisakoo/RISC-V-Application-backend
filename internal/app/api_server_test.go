@@ -18,6 +18,7 @@ import (
 
 type apiApplicationRepository struct {
 	*applicationRepository
+	liked map[int64]bool
 }
 
 func (fake *apiApplicationRepository) SoftDeleteOwned(_ context.Context, id, creatorID int64) error {
@@ -33,6 +34,10 @@ func (fake *apiApplicationRepository) SoftDeleteOwned(_ context.Context, id, cre
 func (fake *apiApplicationRepository) SetLike(_ context.Context, id, _ int64, liked bool) (int64, error) {
 	for index := range fake.commands {
 		if fake.commands[index].ID == id && fake.commands[index].Status == domain.RiscVCommandPublished {
+			if fake.liked == nil {
+				fake.liked = map[int64]bool{}
+			}
+			fake.liked[id] = liked
 			if liked {
 				fake.commands[index].LikeCount = 1
 			} else {
@@ -42,6 +47,10 @@ func (fake *apiApplicationRepository) SetLike(_ context.Context, id, _ int64, li
 		}
 	}
 	return 0, repository.ErrRiscVCommandNotFound
+}
+
+func (fake *apiApplicationRepository) IsLiked(_ context.Context, id, _ int64) (bool, error) {
+	return fake.liked[id], nil
 }
 
 func (fake *apiApplicationRepository) RegisterUser(_ context.Context, _, _ string) (int64, error) {
@@ -124,8 +133,9 @@ func TestLabThreeAPIReturnsDataWithoutStatusWrapper(t *testing.T) {
 		prefix, contains   string
 	}{
 		{http.MethodGet, "/api/riscv_commands", "", 200, `[{`, `"is_creator":1`},
-		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"next_id":2`},
+		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"is_liked":0,"next_id":2`},
 		{http.MethodPost, "/api/riscv_commands/1/like", `{"like":1}`, 200, `{"like":1`, `"like_count":1`},
+		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"is_liked":1,"next_id":2`},
 		{http.MethodDelete, "/api/riscv_commands/1", "", 204, ``, ``},
 	}
 	for _, test := range cases {
@@ -133,11 +143,28 @@ func TestLabThreeAPIReturnsDataWithoutStatusWrapper(t *testing.T) {
 		response := httptest.NewRecorder()
 		server.router.ServeHTTP(response, request)
 		body := response.Body.String()
-		if response.Code != test.status || !strings.HasPrefix(body, test.prefix) || !strings.Contains(body, test.contains) || strings.Contains(body, `"data"`) || strings.Contains(body, `"success"`) {
+		if response.Code != test.status || !strings.HasPrefix(body, test.prefix) || !strings.Contains(body, test.contains) || strings.Contains(body, `"data"`) || strings.Contains(body, `"success"`) || strings.Contains(body, `"creator":{`) {
 			t.Errorf("%s %s: код %d, тело %s", test.method, test.path, response.Code, body)
 		}
 		if test.status == http.StatusNoContent && body != "" {
 			t.Errorf("%s %s: ответ 204 должен быть без тела, получено %s", test.method, test.path, body)
+		}
+	}
+}
+
+func TestLabThreeAPISeparatesListAndFeedFlags(t *testing.T) {
+	server := newAPITestServer()
+	cases := []struct{ path, contains, absent string }{
+		{"/api/riscv_commands", `"creator_login":`, `"is_liked"`},
+		{"/api/riscv_commands/feed", `"creator_login":`, `"is_creator"`},
+	}
+	for _, test := range cases {
+		request := httptest.NewRequest(http.MethodGet, test.path, nil)
+		response := httptest.NewRecorder()
+		server.router.ServeHTTP(response, request)
+		body := response.Body.String()
+		if response.Code != http.StatusOK || !strings.Contains(body, test.contains) || strings.Contains(body, test.absent) {
+			t.Errorf("GET %s: код %d, тело %s", test.path, response.Code, body)
 		}
 	}
 }

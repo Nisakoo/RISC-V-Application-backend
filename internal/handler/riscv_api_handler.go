@@ -34,11 +34,6 @@ func NewRiscVAPIHandler(apiService *service.RiscVAPIService, media apiMedia) *Ri
 	return &RiscVAPIHandler{service: apiService, media: media}
 }
 
-type apiCreator struct {
-	ID    int64  `json:"id"`
-	Login string `json:"login"`
-}
-
 type apiCommand struct {
 	ID           int64                     `json:"id"`
 	Mnemonic     string                    `json:"mnemonic"`
@@ -53,21 +48,31 @@ type apiCommand struct {
 	CreatedAt    time.Time                 `json:"created_at"`
 	PublishedAt  *time.Time                `json:"published_at,omitempty"`
 	LikeCount    int64                     `json:"like_count"`
-	IsCreator    int                       `json:"is_creator"`
-	Creator      apiCreator                `json:"creator"`
+	CreatorLogin string                    `json:"creator_login"`
 }
 
-// apiFeedCommand дополняет команду ленты идентификатором следующей команды
+// apiListCommand дополняет команду списка признаком авторства текущего пользователя
+type apiListCommand struct {
+	apiCommand
+	IsCreator int `json:"is_creator"`
+}
+
+// apiFeedCommand дополняет команду ленты признаком лайка текущего пользователя и идентификатором следующей команды
 type apiFeedCommand struct {
 	apiCommand
-	NextID int64 `json:"next_id"`
+	IsLiked int   `json:"is_liked"`
+	NextID  int64 `json:"next_id"`
+}
+
+// apiFlag переводит логический признак в значение 0/1
+func apiFlag(value bool) int {
+	if value {
+		return 1
+	}
+	return 0
 }
 
 func (handler *RiscVAPIHandler) serialize(ctx context.Context, command domain.RiscVCommand) apiCommand {
-	isCreator := 0
-	if command.CreatorID == service.CurrentUserID() {
-		isCreator = 1
-	}
 	return apiCommand{
 		ID: command.ID, Mnemonic: command.Mnemonic, Description: command.Description,
 		OperandCount: command.OperandCount, LengthBits: command.LengthBits,
@@ -75,8 +80,7 @@ func (handler *RiscVAPIHandler) serialize(ctx context.Context, command domain.Ri
 		ImageURL: handler.media.ImageURL(ctx, command.ImageKey),
 		VideoURL: handler.media.VideoURL(ctx, command.VideoKey),
 		Status:   command.Status, CreatedAt: command.CreatedAt, PublishedAt: command.PublishedAt,
-		LikeCount: command.LikeCount, IsCreator: isCreator,
-		Creator: apiCreator{ID: command.CreatorID, Login: command.CreatorLogin},
+		LikeCount: command.LikeCount, CreatorLogin: command.CreatorLogin,
 	}
 }
 
@@ -125,9 +129,12 @@ func (handler *RiscVAPIHandler) List(context *gin.Context) {
 		apiInternalError(context, "список команд RISC-V", err)
 		return
 	}
-	items := make([]apiCommand, 0, len(commands))
+	items := make([]apiListCommand, 0, len(commands))
 	for _, command := range commands {
-		items = append(items, handler.serialize(context.Request.Context(), command))
+		items = append(items, apiListCommand{
+			apiCommand: handler.serialize(context.Request.Context(), command),
+			IsCreator:  apiFlag(command.CreatorID == service.CurrentUserID()),
+		})
 	}
 	context.JSON(http.StatusOK, items)
 }
@@ -142,16 +149,7 @@ func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
 		}
 		id = &parsed
 	}
-	next := false
-	if value := context.Query("next"); value != "" {
-		var err error
-		next, err = strconv.ParseBool(value)
-		if err != nil || (next && id == nil) {
-			apiFailure(context, http.StatusBadRequest, "Для перехода к следующей команде укажите id и next=true.")
-			return
-		}
-	}
-	command, following, err := handler.service.Feed(context.Request.Context(), id, next)
+	command, following, liked, err := handler.service.Feed(context.Request.Context(), id)
 	if errors.Is(err, service.ErrRiscVCommandNotFound) {
 		apiFailure(context, http.StatusNotFound, "Команда RISC-V не найдена.")
 		return
@@ -160,7 +158,11 @@ func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
 		apiInternalError(context, "лента команд RISC-V", err)
 		return
 	}
-	context.JSON(http.StatusOK, apiFeedCommand{apiCommand: handler.serialize(context.Request.Context(), command), NextID: following.ID})
+	context.JSON(http.StatusOK, apiFeedCommand{
+		apiCommand: handler.serialize(context.Request.Context(), command),
+		IsLiked:    apiFlag(liked),
+		NextID:     following.ID,
+	})
 }
 
 func (handler *RiscVAPIHandler) Draft(context *gin.Context) {
