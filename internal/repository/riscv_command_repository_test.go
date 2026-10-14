@@ -2,9 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"riscv-lab/internal/config"
 	"riscv-lab/internal/domain"
@@ -86,28 +89,36 @@ func TestRiscVCommandRepositoryDraftLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	draft, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "XOR"})
+	draft, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{
+		Mnemonic: "XOR", ImageKey: "images/missing/xor.png", VideoKey: "video/missing/xor.mp4",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if draft.Status != domain.RiscVCommandDraft || draft.CreatorID != creatorID {
 		t.Fatalf("создан некорректный черновик: %+v", draft)
 	}
-	if draft.ImageKey != "" || draft.VideoKey != "" {
-		t.Fatalf("для нового черновика сохранены ключи медиа: %+v", draft)
+	if draft.ImageKey != "images/missing/xor.png" || draft.VideoKey != "video/missing/xor.mp4" {
+		t.Fatalf("ключи медиа черновика сохранены неверно: %+v", draft)
 	}
 	var missingFields int64
 	if err := repository.db.WithContext(ctx).Raw(`
 		SELECT COUNT(*) FROM riscv_commands
 		WHERE id = ? AND description IS NULL AND operand_count IS NULL
-		AND length_bits IS NULL AND image_key IS NULL AND video_key IS NULL
-		AND published_at IS NULL
+		AND length_bits IS NULL AND published_at IS NULL
 	`, draft.ID).Scan(&missingFields).Error; err != nil {
 		t.Fatal(err)
 	}
 	if missingFields != 1 {
 		t.Fatal("поля нового черновика должны быть NULL до публикации")
 	}
+	// Ошибка вставки прерывает транзакцию теста, поэтому проверка выполняется внутри точки сохранения
+	repository.db.SavePoint("media_keys")
+	var postgresError *pgconn.PgError
+	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "AND"}); !errors.As(err, &postgresError) || postgresError.ConstraintName != "riscv_commands_media_keys_not_empty" {
+		t.Fatalf("черновик без url медиа должен нарушать ограничение схемы: %v", err)
+	}
+	repository.db.RollbackTo("media_keys")
 	published, err := repository.PublishDraft(ctx, draft.ID, creatorID, domain.PublishRiscVCommandDraft{
 		Description:  "Выполняет побитовое исключающее ИЛИ для двух исходных регистров.",
 		OperandCount: 3,
@@ -131,10 +142,10 @@ func TestRiscVCommandRepositoryDraftLifecycle(t *testing.T) {
 		t.Fatalf("получен статус %q, ожидался deleted", deleted.Status)
 	}
 
-	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLT"}); err != nil {
+	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLT", ImageKey: "images/missing/slt.png", VideoKey: "video/missing/slt.mp4"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLL"}); err != ErrDraftAlreadyExists {
+	if _, err := repository.CreateDraft(ctx, creatorID, domain.CreateRiscVCommandDraft{Mnemonic: "SLL", ImageKey: "images/missing/sll.png", VideoKey: "video/missing/sll.mp4"}); err != ErrDraftAlreadyExists {
 		t.Fatalf("получена ошибка %v, ожидалась %v", err, ErrDraftAlreadyExists)
 	}
 }

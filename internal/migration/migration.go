@@ -15,6 +15,7 @@ var versions = []string{
 	"003_methodology_media_and_fields",
 	"004_restore_command_length",
 	"005_command_fields",
+	"006_required_media_keys",
 }
 
 //go:embed sql/*.sql
