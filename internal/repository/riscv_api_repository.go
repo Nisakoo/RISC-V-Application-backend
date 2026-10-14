@@ -61,6 +61,19 @@ func (repository *RiscVCommandRepository) SetLike(ctx context.Context, commandID
 	return count, nil
 }
 
+// IsLiked проверяет, поставил ли пользователь лайк команде RISC-V
+func (repository *RiscVCommandRepository) IsLiked(ctx context.Context, commandID, userID int64) (bool, error) {
+	var liked bool
+	err := repository.db.WithContext(ctx).Raw(
+		"SELECT EXISTS (SELECT 1 FROM riscv_command_likes WHERE user_id = ? AND riscv_command_id = ?)",
+		userID, commandID,
+	).Scan(&liked).Error
+	if err != nil {
+		return false, fmt.Errorf("проверка лайка команды RISC-V: %w", err)
+	}
+	return liked, nil
+}
+
 type riscvCommandLikeRecord struct {
 	ID             int64 `gorm:"primaryKey;column:id"`
 	UserID         int64 `gorm:"column:user_id"`

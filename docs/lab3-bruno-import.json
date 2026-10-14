@@ -99,23 +99,30 @@
       }
     },
     {
-      "name": "05 Лента без id",
+      "name": "05 Лента команд",
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{base_url}}/api/riscv_commands/feed"
-      }
+        "url": "{{base_url}}/api/riscv_commands/feed?id={{feed_command_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const response = res.getBody();",
+              "// Следующий запуск запроса откроет следующую команду ленты",
+              "if (response && response.next_id) {",
+              "    bru.setVar(\"feed_command_id\", response.next_id);",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
-      "name": "06 Следующая команда",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{base_url}}/api/riscv_commands/feed?id={{feed_command_id}}&next=true"
-      }
-    },
-    {
-      "name": "07 Поставить лайк",
+      "name": "06 Поставить лайк",
       "request": {
         "method": "POST",
         "header": [
@@ -137,7 +144,7 @@
       }
     },
     {
-      "name": "08 Удалить свою команду",
+      "name": "07 Удалить свою команду",
       "request": {
         "method": "DELETE",
         "header": [],
@@ -145,7 +152,7 @@
       }
     },
     {
-      "name": "09 Зарегистрировать пользователя",
+      "name": "08 Зарегистрировать пользователя",
       "request": {
         "method": "POST",
         "header": [
@@ -167,7 +174,7 @@
       }
     },
     {
-      "name": "10 Аутентификация: заглушка",
+      "name": "09 Аутентификация: заглушка",
       "request": {
         "method": "POST",
         "header": [
@@ -189,7 +196,7 @@
       }
     },
     {
-      "name": "11 Деавторизация: заглушка",
+      "name": "10 Деавторизация: заглушка",
       "request": {
         "method": "POST",
         "header": [
@@ -202,58 +209,6 @@
         "body": {
           "mode": "raw",
           "raw": "{}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "Ошибка: недопустимый id",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{base_url}}/api/riscv_commands/feed?id=-1"
-      }
-    },
-    {
-      "name": "Ошибка: недопустимый like",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{base_url}}/api/riscv_commands/{{command_id}}/like",
-        "body": {
-          "mode": "raw",
-          "raw": "{\"like\": 2}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "Ошибка: системное поле публикации",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{base_url}}/api/riscv_commands/{{command_id}}/publish",
-        "body": {
-          "mode": "raw",
-          "raw": "{\"description\": \"Описание команды длиной более десяти символов\", \"operand_count\": 3, \"length_bits\": 32, \"creator_id\": 2}",
           "options": {
             "raw": {
               "language": "json"
@@ -274,7 +229,7 @@
     },
     {
       "key": "feed_command_id",
-      "value": "1"
+      "value": ""
     },
     {
       "key": "new_login",

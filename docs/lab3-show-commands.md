@@ -13,7 +13,7 @@ curl -sS -X POST \
   -F 'video=@backend/assets/video/ADD.mp4' \
   'http://localhost:8080/api/riscv_commands' \
   | tee /tmp/riscv-lab3-created.json | jq .
-RISC_V_COMMAND_ID=$(jq -r '.data.id' /tmp/riscv-lab3-created.json)
+RISC_V_COMMAND_ID=$(jq -r '.id' /tmp/riscv-lab3-created.json)
 ```
 
 ## 4
@@ -40,7 +40,7 @@ curl -i 'http://localhost:8080/api/riscv_commands/feed'
 ## 7
 
 ```bash
-curl -i "http://localhost:8080/api/riscv_commands/feed?id=$RISC_V_COMMAND_ID&next=true"
+curl -i "http://localhost:8080/api/riscv_commands/feed?id=$RISC_V_COMMAND_ID"
 ```
 
 ## 8

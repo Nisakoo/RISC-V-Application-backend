@@ -31,6 +31,7 @@ type RiscVAPIRepository interface {
 	RiscVCommandRepository
 	SoftDeleteOwned(ctx context.Context, id, creatorID int64) error
 	SetLike(ctx context.Context, commandID, userID int64, liked bool) (int64, error)
+	IsLiked(ctx context.Context, commandID, userID int64) (bool, error)
 	RegisterUser(ctx context.Context, login, passwordHash string) (int64, error)
 }
 
@@ -48,19 +49,17 @@ func (service *RiscVAPIService) List(ctx context.Context, minimum, maximum int) 
 	return commands, err
 }
 
-func (service *RiscVAPIService) Feed(ctx context.Context, id *int64, next bool) (domain.RiscVCommand, domain.RiscVCommand, error) {
+// Feed возвращает команду ленты, следующую команду и признак лайка текущего пользователя
+func (service *RiscVAPIService) Feed(ctx context.Context, id *int64) (domain.RiscVCommand, domain.RiscVCommand, bool, error) {
 	command, following, err := service.commands.GetFeedRiscVCommand(ctx, id)
 	if err != nil {
-		return domain.RiscVCommand{}, domain.RiscVCommand{}, err
+		return domain.RiscVCommand{}, domain.RiscVCommand{}, false, err
 	}
-	if next && id != nil {
-		command = following
-		following, err = service.repository.GetNextVisible(ctx, command.ID)
-		if err != nil {
-			return domain.RiscVCommand{}, domain.RiscVCommand{}, err
-		}
+	liked, err := service.repository.IsLiked(ctx, command.ID, CurrentUserID())
+	if err != nil {
+		return domain.RiscVCommand{}, domain.RiscVCommand{}, false, err
 	}
-	return command, following, nil
+	return command, following, liked, nil
 }
 
 func (service *RiscVAPIService) Draft(ctx context.Context) (domain.RiscVCommand, error) {

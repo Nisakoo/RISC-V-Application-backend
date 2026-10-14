@@ -46,9 +46,15 @@ func TestRiscVAPIRepositoryLifecycleAndOwnership(t *testing.T) {
 			t.Fatalf("повторный лайк: count=%d err=%v", count, err)
 		}
 	}
+	if liked, err := repository.IsLiked(ctx, published.ID, ownerID); err != nil || !liked {
+		t.Fatalf("лайк не найден: liked=%v err=%v", liked, err)
+	}
 	count, err := repository.SetLike(ctx, published.ID, ownerID, false)
 	if err != nil || count != 0 {
 		t.Fatalf("отмена лайка: count=%d err=%v", count, err)
+	}
+	if liked, err := repository.IsLiked(ctx, published.ID, ownerID); err != nil || liked {
+		t.Fatalf("отменённый лайк найден: liked=%v err=%v", liked, err)
 	}
 	if err := repository.SoftDeleteOwned(ctx, published.ID, 1); !errors.Is(err, ErrRiscVCommandNotFound) {
 		t.Fatalf("чужая команда была удалена: %v", err)

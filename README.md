@@ -30,16 +30,18 @@
 
 | Метод | URL | Описание |
 | --- | --- | --- |
-| `GET` | `/api/riscv_commands` | Список опубликованных команд с фильтрацией по `min_operands` и `max_operands` и признаком `is_creator` (0/1). |
-| `GET` | `/api/riscv_commands/feed` | Лента опубликованных команд; необязательный `id`, переход к следующей команде через `id` и `next=true`. |
+| `GET` | `/api/riscv_commands` | Список опубликованных команд с фильтрацией по `min_operands` и `max_operands` (0–3); у каждой команды признак `is_creator` (0/1): создатель совпадает с текущим пользователем. |
+| `GET` | `/api/riscv_commands/feed` | Лента опубликованных команд; необязательный `id` (без него — первая команда). Ответ содержит признак `is_liked` (0/1): текущий пользователь поставил лайк, и `next_id` для перехода к следующей команде через `?id=<next_id>`. |
 | `GET` | `/api/riscv_commands/draft` | Черновик текущего пользователя без передачи его ID. |
 | `POST` | `/api/riscv_commands` | Создание черновика из `mnemonic` и файлов `image`, `video` в `multipart/form-data`; файлы сохраняются в MinIO. |
 | `PUT` | `/api/riscv_commands/{id}/publish` | Публикация своего черновика с полями `description`, `operand_count`, `length_bits`. |
 | `DELETE` | `/api/riscv_commands/{id}` | Логическое удаление своей команды. |
-| `POST` | `/api/riscv_commands/{id}/like` | Установка (`like: 1`) или отмена (`like: 0`) лайка опубликованной команды. |
+| `POST` | `/api/riscv_commands/{id}/like` | Установка (`like: 1`) или отмена (`like: 0`) лайка опубликованной команды; ответ содержит `like` и `like_count`. |
 | `POST` | `/api/users` | Регистрация пользователя по `login` и `password`. |
 | `POST` | `/api/users/authentication` | Заглушка аутентификации до лабораторной работы №4. |
 | `POST` | `/api/users/logout` | Заглушка деавторизации до лабораторной работы №4. |
+
+Команда в ответах содержит `id`, `mnemonic`, `description`, `operand_count`, `length_bits`, `image_key`, `video_key`, `image_url`, `video_url`, `status`, `created_at`, `published_at`, `like_count` и логин создателя `creator_login`.
 
 ## Таблицы PostgreSQL
 
