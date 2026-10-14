@@ -57,6 +57,12 @@ type apiCommand struct {
 	Creator      apiCreator                `json:"creator"`
 }
 
+// apiFeedCommand дополняет команду ленты идентификатором следующей команды
+type apiFeedCommand struct {
+	apiCommand
+	NextID int64 `json:"next_id"`
+}
+
 func (handler *RiscVAPIHandler) serialize(ctx context.Context, command domain.RiscVCommand) apiCommand {
 	isCreator := 0
 	if command.CreatorID == service.CurrentUserID() {
@@ -75,7 +81,7 @@ func (handler *RiscVAPIHandler) serialize(ctx context.Context, command domain.Ri
 }
 
 func apiFailure(context *gin.Context, status int, message string) {
-	context.JSON(status, gin.H{"status": "fail", "message": message})
+	context.JSON(status, gin.H{"message": message})
 }
 
 func apiInternalError(context *gin.Context, operation string, err error) {
@@ -123,7 +129,7 @@ func (handler *RiscVAPIHandler) List(context *gin.Context) {
 	for _, command := range commands {
 		items = append(items, handler.serialize(context.Request.Context(), command))
 	}
-	context.JSON(http.StatusOK, gin.H{"status": "success", "data": items})
+	context.JSON(http.StatusOK, items)
 }
 
 func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
@@ -154,7 +160,7 @@ func (handler *RiscVAPIHandler) Feed(context *gin.Context) {
 		apiInternalError(context, "лента команд RISC-V", err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"status": "success", "data": handler.serialize(context.Request.Context(), command), "next_id": following.ID})
+	context.JSON(http.StatusOK, apiFeedCommand{apiCommand: handler.serialize(context.Request.Context(), command), NextID: following.ID})
 }
 
 func (handler *RiscVAPIHandler) Draft(context *gin.Context) {
@@ -167,7 +173,7 @@ func (handler *RiscVAPIHandler) Draft(context *gin.Context) {
 		apiInternalError(context, "черновик команды RISC-V", err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"status": "success", "data": handler.serialize(context.Request.Context(), command)})
+	context.JSON(http.StatusOK, handler.serialize(context.Request.Context(), command))
 }
 
 func (handler *RiscVAPIHandler) Create(context *gin.Context) {
@@ -230,7 +236,7 @@ func (handler *RiscVAPIHandler) Create(context *gin.Context) {
 		return
 	}
 	context.Header("Location", "/api/riscv_commands/draft")
-	context.JSON(http.StatusCreated, gin.H{"status": "success", "data": handler.serialize(ctx, command)})
+	context.JSON(http.StatusCreated, handler.serialize(ctx, command))
 }
 
 func readAPIJSON(context *gin.Context, target any) error {
@@ -269,7 +275,7 @@ func (handler *RiscVAPIHandler) Publish(context *gin.Context) {
 		apiInternalError(context, "публикация команды RISC-V", err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"status": "success", "data": handler.serialize(context.Request.Context(), command)})
+	context.JSON(http.StatusOK, handler.serialize(context.Request.Context(), command))
 }
 
 func (handler *RiscVAPIHandler) Delete(context *gin.Context) {
@@ -285,7 +291,7 @@ func (handler *RiscVAPIHandler) Delete(context *gin.Context) {
 		apiInternalError(context, "удаление команды RISC-V", err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"status": "success", "message": "Команда RISC-V удалена."})
+	context.Status(http.StatusNoContent)
 }
 
 func (handler *RiscVAPIHandler) Like(context *gin.Context) {
@@ -309,7 +315,7 @@ func (handler *RiscVAPIHandler) Like(context *gin.Context) {
 		apiInternalError(context, "лайк команды RISC-V", err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"like": *input.Like, "like_count": count}})
+	context.JSON(http.StatusOK, gin.H{"like": *input.Like, "like_count": count})
 }
 
 func (handler *RiscVAPIHandler) Register(context *gin.Context) {
@@ -335,13 +341,13 @@ func (handler *RiscVAPIHandler) Register(context *gin.Context) {
 		apiInternalError(context, "регистрация пользователя", err)
 		return
 	}
-	context.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"id": id, "login": input.Login}})
+	context.JSON(http.StatusCreated, gin.H{"id": id, "login": input.Login})
 }
 
 func (handler *RiscVAPIHandler) AuthenticationStub(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"status": "success", "message": "Аутентификация будет реализована в лабораторной работе №4."})
+	context.JSON(http.StatusOK, gin.H{"message": "Аутентификация будет реализована в лабораторной работе №4."})
 }
 
 func (handler *RiscVAPIHandler) LogoutStub(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"status": "success", "message": "Деавторизация будет реализована в лабораторной работе №4."})
+	context.JSON(http.StatusOK, gin.H{"message": "Деавторизация будет реализована в лабораторной работе №4."})
 }

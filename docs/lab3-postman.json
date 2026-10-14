@@ -46,8 +46,8 @@
             "type": "text/javascript",
             "exec": [
               "const response = pm.response.json();",
-              "if (response.data && response.data.id) {",
-              "    pm.collectionVariables.set(\"command_id\", response.data.id);",
+              "if (response && response.id) {",
+              "    pm.collectionVariables.set(\"command_id\", response.id);",
               "}"
             ]
           }

@@ -1,0 +1,344 @@
+<mxfile host="Electron" compressed="false">
+  <diagram id="riscv-lab3-uml" name="ЛР3 — диаграмма компонентов и классов">
+    <mxGraphModel dx="1147" dy="831" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2040" pageHeight="1450" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="service-package" parent="1" style="shape=module;html=1;align=left;verticalAlign=top;spacingTop=15;whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontFamily=Arial;fontSize=22;fontStyle=1;" value="&lt;blockquote style=&quot;margin: 0px 0px 0px 40px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 0px;&quot;&gt;Веб-сервис&lt;/blockquote&gt;" vertex="1">
+          <mxGeometry height="980" width="1280" x="720" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="client-package" parent="1" style="shape=module;html=1;align=center;verticalAlign=top;spacingTop=15;whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontFamily=Arial;fontSize=22;fontStyle=1;" value="Клиентские страницы" vertex="1">
+          <mxGeometry height="850" width="470" x="50" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="page-feed" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="Лента" vertex="1">
+          <mxGeometry height="120" width="360" x="100" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="page-feed-attributes" parent="page-feed" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="40" width="360" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="page-feed-divider" parent="page-feed" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="360" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="page-feed-methods" parent="page-feed" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="42" width="360" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="page-create" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="Создание Черновика" vertex="1">
+          <mxGeometry height="120" width="360" x="100" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="page-create-attributes" parent="page-create" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="40" width="360" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="page-create-divider" parent="page-create" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="360" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="page-create-methods" parent="page-create" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="42" width="360" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="page-publish" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="Публикация Черновика" vertex="1">
+          <mxGeometry height="120" width="360" x="100" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="page-publish-attributes" parent="page-publish" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="40" width="360" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="page-publish-divider" parent="page-publish" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="360" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="page-publish-methods" parent="page-publish" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="42" width="360" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="page-grid" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="Плитка" vertex="1">
+          <mxGeometry height="120" width="360" x="100" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="page-grid-attributes" parent="page-grid" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="40" width="360" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="page-grid-divider" parent="page-grid" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="360" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="page-grid-methods" parent="page-grid" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="42" width="360" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="command-interface" parent="1" style="shape=providedRequiredInterface;html=1;verticalLabelPosition=bottom;sketch=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;rotation=-195;" value="" vertex="1">
+          <mxGeometry height="48" width="48" x="600" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="command-interface-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="API команд" vertex="1">
+          <mxGeometry height="42" width="150" x="550" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="user-interface" parent="1" style="shape=providedRequiredInterface;html=1;verticalLabelPosition=bottom;sketch=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;rotation=-135;" value="" vertex="1">
+          <mxGeometry height="48" width="48" x="600" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="user-interface-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="API пользователей" vertex="1">
+          <mxGeometry height="42" width="180" x="535" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="command-methods" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="Домен команд" vertex="1">
+          <mxGeometry height="365" width="530" x="780" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="command-methods-attributes" parent="command-methods" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="/api/riscv_commands" vertex="1">
+          <mxGeometry height="42" width="530" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="command-methods-divider" parent="command-methods" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="530" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="command-methods-methods" parent="command-methods" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="+ List() — GET /api/riscv_commands&lt;br&gt;+ Feed() — GET /api/riscv_commands/feed&lt;br&gt;+ Draft() — GET /api/riscv_commands/draft&lt;br&gt;+ Create() — POST /api/riscv_commands&lt;br&gt;+ Publish() — PUT /api/riscv_commands/:id/publish&lt;br&gt;+ Delete() — DELETE /api/riscv_commands/:id&lt;br&gt;+ Like() — POST /api/riscv_commands/:id/like" vertex="1">
+          <mxGeometry height="285" width="530" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="user-methods" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="Домен пользователей" vertex="1">
+          <mxGeometry height="190" width="530" x="780" y="635" as="geometry" />
+        </mxCell>
+        <mxCell id="user-methods-attributes" parent="user-methods" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="/api/users" vertex="1">
+          <mxGeometry height="34" width="530" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user-methods-divider" parent="user-methods" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="530" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="user-methods-methods" parent="user-methods" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="+ Register() — POST /api/users&lt;br&gt;+ AuthenticationStub() — POST /api/users/authentication&lt;br&gt;+ LogoutStub() — POST /api/users/logout" vertex="1">
+          <mxGeometry height="118" width="530" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="model-package" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=171;tabHeight=30;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontFamily=Arial;fontSize=20;align=left;verticalAlign=top;" value="&lt;blockquote style=&quot;margin: 0px 0px 0px 40px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 0px;&quot;&gt;&lt;br&gt;&lt;/blockquote&gt;&lt;blockquote style=&quot;margin: 0px 0px 0px 40px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 0px;&quot;&gt;Модели&lt;/blockquote&gt;" vertex="1">
+          <mxGeometry height="910" width="560" x="1380" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="model-command" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="RiscVCommand" vertex="1">
+          <mxGeometry height="155" width="470" x="1420" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="model-command-attributes" parent="model-command" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="ID · Mnemonic · Description · OperandCount&lt;br&gt;LengthBits · ImageKey · VideoKey · Status&lt;br&gt;CreatedAt · PublishedAt · CreatorID&lt;br&gt;CreatorLogin · LikeCount" vertex="1">
+          <mxGeometry height="96" width="470" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-command-divider" parent="model-command" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="470" y="126" as="geometry" />
+        </mxCell>
+        <mxCell id="model-command-methods" parent="model-command" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="21" width="470" y="134" as="geometry" />
+        </mxCell>
+        <mxCell id="model-create" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="CreateRiscVCommandDraft" vertex="1">
+          <mxGeometry height="110" width="220" x="1420" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="model-create-attributes" parent="model-create" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="Mnemonic · ImageKey · VideoKey" vertex="1">
+          <mxGeometry height="46" width="220" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-create-divider" parent="model-create" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="220" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="model-create-methods" parent="model-create" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="26" width="220" y="84" as="geometry" />
+        </mxCell>
+        <mxCell id="model-publish" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="PublishRiscVCommandDraft" vertex="1">
+          <mxGeometry height="110" width="230" x="1660" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="model-publish-attributes" parent="model-publish" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="Description · OperandCount&lt;br&gt;LengthBits" vertex="1">
+          <mxGeometry height="46" width="230" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-publish-divider" parent="model-publish" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="230" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="model-publish-methods" parent="model-publish" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="26" width="230" y="84" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-command" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="apiCommand" vertex="1">
+          <mxGeometry height="140" width="470" x="1420" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-command-attributes" parent="model-api-command" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="id · mnemonic · description · operand_count&lt;br&gt;length_bits · image_key · video_key · status&lt;br&gt;image_url · video_url · like_count&lt;br&gt;is_creator · creator · created_at · published_at" vertex="1">
+          <mxGeometry height="82" width="470" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-command-divider" parent="model-api-command" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="470" y="112" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-command-methods" parent="model-api-command" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="20" width="470" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="model-user" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="userRecord" vertex="1">
+          <mxGeometry height="100" width="220" x="1420" y="774" as="geometry" />
+        </mxCell>
+        <mxCell id="model-user-attributes" parent="model-user" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="id · login&lt;br&gt;password_hash · role" vertex="1">
+          <mxGeometry height="42" width="220" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-user-divider" parent="model-user" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="220" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="model-user-methods" parent="model-user" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="20" width="220" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-creator" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="apiCreator" vertex="1">
+          <mxGeometry height="100" width="230" x="1660" y="655" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-creator-attributes" parent="model-api-creator" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="id · login" vertex="1">
+          <mxGeometry height="42" width="230" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-creator-divider" parent="model-api-creator" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="230" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="model-api-creator-methods" parent="model-api-creator" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="20" width="230" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="model-like" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="riscvCommandLikeRecord" vertex="1">
+          <mxGeometry height="110" width="220" x="1423" y="655" as="geometry" />
+        </mxCell>
+        <mxCell id="model-like-attributes" parent="model-like" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="id · user_id&lt;br&gt;riscv_command_id" vertex="1">
+          <mxGeometry height="46" width="220" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-like-divider" parent="model-like" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="220" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="model-like-methods" parent="model-like" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="26" width="220" y="84" as="geometry" />
+        </mxCell>
+        <mxCell id="model-record" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="riscvCommandRecord" vertex="1">
+          <mxGeometry height="200" width="230" x="1660" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="model-record-attributes" parent="model-record" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="ID · Mnemonic · Description&lt;br&gt;OperandCount · LengthBits&lt;br&gt;ImageKey · VideoKey · Status&lt;br&gt;CreatedAt · PublishedAt&lt;br&gt;CreatorID · CreatorLogin&lt;br&gt;LikeCount" vertex="1">
+          <mxGeometry height="140" width="230" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="model-record-divider" parent="model-record" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="230" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="model-record-methods" parent="model-record" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="22" width="230" y="178" as="geometry" />
+        </mxCell>
+        <mxCell id="database-package" parent="1" style="shape=module;html=1;align=left;verticalAlign=top;spacingTop=15;whiteSpace=wrap;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontFamily=Arial;fontSize=22;fontStyle=1;" value="&lt;blockquote style=&quot;margin: 0px 0px 0px 40px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; padding: 0px;&quot;&gt;База данных&lt;/blockquote&gt;" vertex="1">
+          <mxGeometry height="310" width="1280" x="720" y="1090" as="geometry" />
+        </mxCell>
+        <mxCell id="table-users" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="users" vertex="1">
+          <mxGeometry height="185" width="330" x="780" y="1165" as="geometry" />
+        </mxCell>
+        <mxCell id="table-users-attributes" parent="table-users" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="id PK · login UNIQUE&lt;br&gt;password_hash · role" vertex="1">
+          <mxGeometry height="100" width="330" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="table-users-divider" parent="table-users" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="330" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="table-users-methods" parent="table-users" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="47" width="330" y="138" as="geometry" />
+        </mxCell>
+        <mxCell id="table-commands" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="riscv_commands" vertex="1">
+          <mxGeometry height="185" width="330" x="1190" y="1165" as="geometry" />
+        </mxCell>
+        <mxCell id="table-commands-attributes" parent="table-commands" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="id PK · mnemonic · description&lt;br&gt;operand_count · length_bits&lt;br&gt;image_key · video_key · status&lt;br&gt;created_at · published_at&lt;br&gt;creator_id FK → users" vertex="1">
+          <mxGeometry height="115" width="330" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="table-commands-divider" parent="table-commands" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="330" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="table-commands-methods" parent="table-commands" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="32" width="330" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="table-likes" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Arial;fontSize=15;" value="riscv_command_likes" vertex="1">
+          <mxGeometry height="185" width="330" x="1640" y="1165" as="geometry" />
+        </mxCell>
+        <mxCell id="table-likes-attributes" parent="table-likes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="id PK · user_id FK → users&lt;br&gt;riscv_command_id FK → riscv_commands&lt;br&gt;UNIQUE(user_id, riscv_command_id)" vertex="1">
+          <mxGeometry height="105" width="330" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="table-likes-divider" parent="table-likes" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="8" width="330" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="table-likes-methods" parent="table-likes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=8;spacingRight=6;spacingTop=5;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontColor=#000000;fontFamily=Arial;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="42" width="330" y="143" as="geometry" />
+        </mxCell>
+        <mxCell id="page-feed-api" edge="1" parent="1" source="page-feed" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;entryX=0.842;entryY=0.915;entryDx=0;entryDy=0;entryPerimeter=0;" target="command-interface" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="page-create-api" edge="1" parent="1" source="page-create" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;" target="command-interface" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="page-publish-api" edge="1" parent="1" source="page-publish" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;" target="command-interface" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="page-grid-api" edge="1" parent="1" source="page-grid" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;entryX=0.967;entryY=0.205;entryDx=0;entryDy=0;entryPerimeter=0;" target="command-interface" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="api-command-domain" edge="1" parent="1" source="command-interface" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;" target="command-methods" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="api-user-domain" edge="1" parent="1" source="user-interface" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;exitX=0.164;exitY=0.869;exitDx=0;exitDy=0;exitPerimeter=0;" target="user-methods" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="command-model-command" edge="1" parent="1" source="command-methods" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;" target="model-command" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="command-model-create" edge="1" parent="1" source="command-methods" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;" target="model-create" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="command-model-api-command" edge="1" parent="1" source="command-methods" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;" target="model-api-command" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="command-model-like" edge="1" parent="1" source="command-methods" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;" target="model-like" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="command-model-publish" edge="1" parent="1" source="command-methods" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="model-publish" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1775" y="352.52" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="user-model" edge="1" parent="1" source="user-methods" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;" target="model-user" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="api-creator" edge="1" parent="1" source="model-api-command-methods" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;exitX=0.755;exitY=1.022;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="model-api-creator" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="command-table" edge="1" parent="1" source="model-record-attributes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="table-commands" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1557.36" y="890" />
+              <mxPoint x="1557.36" y="924.15" />
+              <mxPoint x="1355" y="924.15" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="user-table" edge="1" parent="1" source="model-user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.881;entryY=0.002;entryDx=0;entryDy=0;entryPerimeter=0;" target="table-users" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1070" y="842" />
+              <mxPoint x="1070" y="1165.39" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="like-table" edge="1" parent="1" source="model-like-attributes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=1;dashPattern=7 5;endArrow=open;endFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.486;entryY=0;entryDx=0;entryDy=0;jumpStyle=arc;entryPerimeter=0;" target="table-likes" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1643" y="710" />
+              <mxPoint x="1650.04" y="710" />
+              <mxPoint x="1650.04" y="1075.04" />
+              <mxPoint x="1799.91" y="1075.04" />
+              <mxPoint x="1799.91" y="1165" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="command-users-fk" edge="1" parent="1" source="table-commands" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;" target="table-users" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="likes-command-fk" edge="1" parent="1" source="table-likes" style="edgeStyle=none;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;" target="table-commands" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="likes-user-fk" edge="1" parent="1" source="table-likes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;strokeWidth=1.5;dashed=0;endArrow=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="table-users" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1805" y="1375" />
+              <mxPoint x="945" y="1375" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cQhcRFB-uocdkkaiKk9q-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="1" vertex="1">
+          <mxGeometry height="16" width="26" x="1106" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="cQhcRFB-uocdkkaiKk9q-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="0..*" vertex="1">
+          <mxGeometry height="16" width="26" x="1164" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="cQhcRFB-uocdkkaiKk9q-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="0..*" vertex="1">
+          <mxGeometry height="16" width="26" x="1520" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="cQhcRFB-uocdkkaiKk9q-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="0..*" vertex="1">
+          <mxGeometry height="16" width="26" x="1614" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="cQhcRFB-uocdkkaiKk9q-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="1" vertex="1">
+          <mxGeometry height="16" width="26" x="945" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="cQhcRFB-uocdkkaiKk9q-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="0..*" vertex="1">
+          <mxGeometry height="16" width="26" x="1779" y="1350" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
