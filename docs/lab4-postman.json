@@ -10,6 +10,11 @@
         "method": "POST",
         "header": [
           {
+            "key": "Authorization",
+            "value": "Bearer ",
+            "type": "text"
+          },
+          {
             "key": "Content-Type",
             "value": "application/json"
           }
@@ -32,6 +37,11 @@
         "method": "POST",
         "header": [
           {
+            "key": "Authorization",
+            "value": "Bearer ",
+            "type": "text"
+          },
+          {
             "key": "Content-Type",
             "value": "application/json"
           }
@@ -46,22 +56,7 @@
             }
           }
         }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "const response = pm.response.json();",
-              "// JWT подставляется вручную в заголовок Authorization остальных запросов",
-              "if (response && response.access_token) {",
-              "    pm.collectionVariables.set(\"access_token\", response.access_token);",
-              "}"
-            ]
-          }
-        }
-      ]
+      }
     },
     {
       "name": "03 Список команд с фильтром",
@@ -70,7 +65,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           }
         ],
@@ -84,7 +79,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           }
         ],
@@ -132,7 +127,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           }
         ],
@@ -146,7 +141,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           },
           {
@@ -173,7 +168,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           }
         ],
@@ -222,7 +217,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           },
           {
@@ -249,7 +244,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           }
         ],
@@ -263,7 +258,7 @@
         "header": [
           {
             "key": "Authorization",
-            "value": "Bearer {{access_token}}",
+            "value": "Bearer ",
             "type": "text"
           }
         ],
@@ -282,10 +277,6 @@
     },
     {
       "key": "password",
-      "value": ""
-    },
-    {
-      "key": "access_token",
       "value": ""
     },
     {
