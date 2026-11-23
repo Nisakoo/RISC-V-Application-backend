@@ -12,19 +12,21 @@ const (
 
 // RiscVCommand описывает команду каталога RISC-V и её состояние публикации.
 type RiscVCommand struct {
-	ID           int64
-	Mnemonic     string
-	Description  string
-	OperandCount int
-	LengthBits   int
-	ImageKey     string
-	VideoKey     string
-	Status       RiscVCommandStatus
-	CreatedAt    time.Time
-	PublishedAt  *time.Time
-	CreatorID    int64
-	CreatorLogin string
-	LikeCount    int64
+	ID          int64
+	Mnemonic    string
+	Description string
+	// DescriptionEn — краткое описание на английском для поиска по изображению
+	DescriptionEn string
+	OperandCount  int
+	LengthBits    int
+	ImageKey      string
+	VideoKey      string
+	Status        RiscVCommandStatus
+	CreatedAt     time.Time
+	PublishedAt   *time.Time
+	CreatorID     int64
+	CreatorLogin  string
+	LikeCount     int64
 }
 
 type CreateRiscVCommandDraft struct {

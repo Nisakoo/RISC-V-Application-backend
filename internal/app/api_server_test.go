@@ -158,7 +158,7 @@ func newAPITestServer(t *testing.T) *Server {
 	}
 	fake := &apiApplicationRepository{
 		applicationRepository: &applicationRepository{commands: []domain.RiscVCommand{
-			{ID: 1, Mnemonic: "ADD", Status: domain.RiscVCommandPublished, CreatorID: 1, CreatorLogin: "riscv_moderator", OperandCount: 3},
+			{ID: 1, Mnemonic: "ADD", DescriptionEn: "Adds two source registers.", Status: domain.RiscVCommandPublished, CreatorID: 1, CreatorLogin: "riscv_moderator", OperandCount: 3},
 			{ID: 2, Mnemonic: "SUB", Status: domain.RiscVCommandPublished, CreatorID: 2, CreatorLogin: "pipeline_author", OperandCount: 3},
 			{ID: 3, Mnemonic: "OR", Status: domain.RiscVCommandDeleted, CreatorID: 1, CreatorLogin: "riscv_moderator", OperandCount: 3},
 		}},
@@ -329,6 +329,16 @@ func TestAPIFeedBatchKeepsSessionAndNumbering(t *testing.T) {
 	for _, query := range []string{"session_id=bad", "refresh=maybe"} {
 		if code, _ := read("/api/riscv_commands/feed/batch?" + query); code != http.StatusBadRequest {
 			t.Errorf("запрос %s принят: код %d", query, code)
+		}
+	}
+}
+
+func TestAPIReturnsEnglishDescription(t *testing.T) {
+	server := newAPITestServer(t)
+	for _, path := range []string{"/api/riscv_commands", "/api/riscv_commands/feed?id=1"} {
+		response := serve(server, http.MethodGet, path, "", "")
+		if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"description_en":"Adds two source registers."`) {
+			t.Errorf("GET %s: код %d, тело %s", path, response.Code, response.Body.String())
 		}
 	}
 }

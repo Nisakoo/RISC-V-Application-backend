@@ -775,6 +775,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "description_en": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -890,6 +893,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "description_en": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -942,6 +948,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "description_en": {
                     "type": "string"
                 },
                 "id": {
@@ -1021,6 +1030,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "description_en": {
                     "type": "string"
                 },
                 "id": {

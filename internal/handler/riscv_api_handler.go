@@ -35,20 +35,21 @@ func NewRiscVAPIHandler(apiService *service.RiscVAPIService, media apiMedia) *Ri
 }
 
 type apiCommand struct {
-	ID           int64                     `json:"id"`
-	Mnemonic     string                    `json:"mnemonic"`
-	Description  string                    `json:"description,omitempty"`
-	OperandCount int                       `json:"operand_count"`
-	LengthBits   int                       `json:"length_bits"`
-	ImageKey     string                    `json:"image_key,omitempty"`
-	VideoKey     string                    `json:"video_key,omitempty"`
-	ImageURL     string                    `json:"image_url"`
-	VideoURL     string                    `json:"video_url"`
-	Status       domain.RiscVCommandStatus `json:"status"`
-	CreatedAt    time.Time                 `json:"created_at"`
-	PublishedAt  *time.Time                `json:"published_at,omitempty"`
-	LikeCount    int64                     `json:"like_count"`
-	CreatorLogin string                    `json:"creator_login"`
+	ID            int64                     `json:"id"`
+	Mnemonic      string                    `json:"mnemonic"`
+	Description   string                    `json:"description,omitempty"`
+	DescriptionEn string                    `json:"description_en,omitempty"`
+	OperandCount  int                       `json:"operand_count"`
+	LengthBits    int                       `json:"length_bits"`
+	ImageKey      string                    `json:"image_key,omitempty"`
+	VideoKey      string                    `json:"video_key,omitempty"`
+	ImageURL      string                    `json:"image_url"`
+	VideoURL      string                    `json:"video_url"`
+	Status        domain.RiscVCommandStatus `json:"status"`
+	CreatedAt     time.Time                 `json:"created_at"`
+	PublishedAt   *time.Time                `json:"published_at,omitempty"`
+	LikeCount     int64                     `json:"like_count"`
+	CreatorLogin  string                    `json:"creator_login"`
 }
 
 // apiListCommand дополняет команду списка признаком авторства текущего пользователя
@@ -74,7 +75,7 @@ func apiFlag(value bool) int {
 
 func (handler *RiscVAPIHandler) serialize(ctx context.Context, command domain.RiscVCommand) apiCommand {
 	return apiCommand{
-		ID: command.ID, Mnemonic: command.Mnemonic, Description: command.Description,
+		ID: command.ID, Mnemonic: command.Mnemonic, Description: command.Description, DescriptionEn: command.DescriptionEn,
 		OperandCount: command.OperandCount, LengthBits: command.LengthBits,
 		ImageKey: command.ImageKey, VideoKey: command.VideoKey,
 		ImageURL: handler.media.ImageURL(ctx, command.ImageKey),

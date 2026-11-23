@@ -67,12 +67,13 @@ func main() {
 			FROM generate_series(1, ?) AS number
 		)
 		INSERT INTO riscv_commands (
-			mnemonic, description, operand_count, length_bits,
+			mnemonic, description, description_en, operand_count, length_bits,
 			image_key, video_key, status, creator_id, created_at, published_at
 		)
 		SELECT
 			mnemonics.names[1 + floor(series.mnemonic * cardinality(mnemonics.names))::int],
 			'Команда набора ' || series.number || ': демонстрационное описание для проверки пагинации и индексов.',
+			'Demo command from generated set number ' || series.number || '.',
 			CASE WHEN series.operands < 0.04 THEN 0 WHEN series.operands < 0.22 THEN 1 WHEN series.operands < 0.50 THEN 2 ELSE 3 END,
 			32,
 			? || series.number || '.png',

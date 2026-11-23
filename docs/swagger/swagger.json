@@ -771,6 +771,9 @@
                 "description": {
                     "type": "string"
                 },
+                "description_en": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -886,6 +889,9 @@
                 "description": {
                     "type": "string"
                 },
+                "description_en": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -938,6 +944,9 @@
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "description_en": {
                     "type": "string"
                 },
                 "id": {
@@ -1017,6 +1026,9 @@
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "description_en": {
                     "type": "string"
                 },
                 "id": {
