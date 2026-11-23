@@ -69,7 +69,7 @@ func main() {
 	}
 	defer tokenBlacklist.Close()
 
-	riscvAPIService := service.NewRiscVAPIService(riscvCommandRepository)
+	riscvAPIService := service.NewRiscVAPIService(riscvCommandRepository).WithFeedStore(tokenBlacklist.FeedStore())
 	userService := service.NewUserService(riscvCommandRepository, tokenBlacklist, applicationConfig.JWTSecret, applicationConfig.JWTTTL)
 	server := app.NewServer(applicationConfig.ServerAddress, riscvCommandHandler, &app.API{
 		RiscVCommands: handler.NewRiscVAPIHandler(riscvAPIService, mediaStorage),

@@ -131,14 +131,45 @@ func apiOperandCount(context *gin.Context, name string, fallback int) (int, bool
 	return count, true
 }
 
+const (
+	// defaultPageLimit — размер страницы списка по умолчанию
+	defaultPageLimit = 12
+	// maximumPageLimit ограничивает размер страницы, чтобы запрос не возвращал весь каталог
+	maximumPageLimit = 100
+)
+
+// apiCommandPage описывает страницу списка команд с общим количеством
+type apiCommandPage struct {
+	Total int64            `json:"total" example:"100006"`
+	Page  int              `json:"page" example:"1"`
+	Limit int              `json:"limit" example:"12"`
+	Data  []apiListCommand `json:"data"`
+}
+
+// apiPositiveInt читает положительный параметр запроса в пределах maximum (0 — без верхней границы)
+func apiPositiveInt(context *gin.Context, name string, fallback, maximum int) (int, bool) {
+	value := context.Query(name)
+	if value == "" {
+		return fallback, true
+	}
+	number, err := strconv.Atoi(value)
+	if err != nil || number < 1 || (maximum > 0 && number > maximum) {
+		apiFailure(context, http.StatusBadRequest, "Параметр "+name+" задан некорректно.")
+		return 0, false
+	}
+	return number, true
+}
+
 // List godoc
-// @Summary      Список опубликованных команд RISC-V
-// @Description  Возвращает опубликованные команды с фильтрацией по количеству операндов. Доступен гостю; для аутентифицированного пользователя is_creator = 1 у его команд.
+// @Summary      Страница опубликованных команд RISC-V
+// @Description  Возвращает страницу опубликованных команд с фильтрацией по количеству операндов и общим количеством команд фильтра. Доступен гостю; для аутентифицированного пользователя is_creator = 1 у его команд.
 // @Tags         riscv_commands
 // @Produce      json
 // @Param        min_operands  query     int  false  "Минимальное количество операндов"   minimum(0) maximum(3)
 // @Param        max_operands  query     int  false  "Максимальное количество операндов"  minimum(0) maximum(3)
-// @Success      200           {array}   apiListCommand
+// @Param        page          query     int  false  "Номер страницы"                      minimum(1) default(1)
+// @Param        limit         query     int  false  "Размер страницы"                     minimum(1) maximum(100) default(12)
+// @Success      200           {object}  apiCommandPage
 // @Failure      400           {object}  apiErrorResponse
 // @Failure      500           {object}  apiErrorResponse
 // @Security     BearerAuth
@@ -152,7 +183,15 @@ func (handler *RiscVAPIHandler) List(context *gin.Context) {
 	if !ok {
 		return
 	}
-	commands, err := handler.service.List(context.Request.Context(), minimum, maximum)
+	page, ok := apiPositiveInt(context, "page", 1, 0)
+	if !ok {
+		return
+	}
+	limit, ok := apiPositiveInt(context, "limit", defaultPageLimit, maximumPageLimit)
+	if !ok {
+		return
+	}
+	commands, total, err := handler.service.List(context.Request.Context(), minimum, maximum, page, limit)
 	if err != nil {
 		apiInternalError(context, "список команд RISC-V", err)
 		return
@@ -165,7 +204,72 @@ func (handler *RiscVAPIHandler) List(context *gin.Context) {
 			IsCreator:  apiFlag(userID > 0 && command.CreatorID == userID),
 		})
 	}
-	context.JSON(http.StatusOK, items)
+	context.JSON(http.StatusOK, apiCommandPage{Total: total, Page: page, Limit: limit, Data: items})
+}
+
+// apiFeedBatchItem — команда порции ленты с порядковым номером в сессии
+type apiFeedBatchItem struct {
+	apiCommand
+	Position int `json:"position" example:"1"`
+	IsLiked  int `json:"is_liked"`
+}
+
+// apiFeedBatch описывает порцию ленты сессии
+type apiFeedBatch struct {
+	SessionID     string             `json:"session_id" example:"0f8fad5bd9cb469fa16570867728950e"`
+	BatchNumber   int                `json:"batch_number" example:"1"`
+	FirstPosition int                `json:"first_position" example:"1"`
+	Items         []apiFeedBatchItem `json:"items"`
+}
+
+// FeedBatch godoc
+// @Summary      Порция ленты сессии из Redis
+// @Description  Возвращает до 100 случайных неповторяющихся опубликованных команд с порядковыми номерами в сессии. Без session_id создаётся новая сессия. refresh=true формирует следующую порцию после просмотра текущей; номера продолжаются. Порция хранится в Redis 30 минут. Доступна гостю; is_liked = 1, если аутентифицированный пользователь поставил лайк.
+// @Tags         riscv_commands
+// @Produce      json
+// @Param        session_id  query     string  false  "Идентификатор сессии ленты из предыдущего ответа"
+// @Param        refresh     query     bool    false  "Сформировать новую порцию"
+// @Success      200         {object}  apiFeedBatch
+// @Failure      400         {object}  apiErrorResponse
+// @Failure      404         {object}  apiErrorResponse
+// @Failure      500         {object}  apiErrorResponse
+// @Failure      503         {object}  apiErrorResponse
+// @Security     BearerAuth
+// @Router       /api/riscv_commands/feed/batch [get]
+func (handler *RiscVAPIHandler) FeedBatch(context *gin.Context) {
+	refresh := false
+	if value := context.Query("refresh"); value != "" {
+		var err error
+		if refresh, err = strconv.ParseBool(value); err != nil {
+			apiFailure(context, http.StatusBadRequest, "Параметр refresh должен быть true или false.")
+			return
+		}
+	}
+	ctx := context.Request.Context()
+	batch, items, err := handler.service.FeedBatch(ctx, middleware.CurrentUserID(context), context.Query("session_id"), refresh)
+	switch {
+	case errors.Is(err, service.ErrInvalidFeedSession):
+		apiFailure(context, http.StatusBadRequest, "Некорректный идентификатор сессии ленты.")
+		return
+	case errors.Is(err, service.ErrRiscVCommandNotFound):
+		apiFailure(context, http.StatusNotFound, "Опубликованных команд RISC-V нет.")
+		return
+	case errors.Is(err, service.ErrFeedUnavailable):
+		apiFailure(context, http.StatusServiceUnavailable, "Лента сессии временно недоступна.")
+		return
+	case err != nil:
+		apiInternalError(context, "порция ленты команд RISC-V", err)
+		return
+	}
+	response := apiFeedBatch{SessionID: batch.SessionID, BatchNumber: batch.BatchNumber, FirstPosition: batch.FirstPosition, Items: make([]apiFeedBatchItem, 0, len(items))}
+	for _, item := range items {
+		response.Items = append(response.Items, apiFeedBatchItem{
+			apiCommand: handler.serialize(ctx, item.Command),
+			Position:   item.Position,
+			IsLiked:    apiFlag(item.Liked),
+		})
+	}
+	context.JSON(http.StatusOK, response)
 }
 
 // Feed godoc

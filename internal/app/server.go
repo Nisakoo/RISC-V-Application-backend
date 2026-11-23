@@ -62,6 +62,7 @@ func registerAPI(router *gin.Engine, api *API) {
 	commands := router.Group("/api/riscv_commands")
 	commands.GET("", optional, api.RiscVCommands.List)
 	commands.GET("/feed", optional, api.RiscVCommands.Feed)
+	commands.GET("/feed/batch", optional, api.RiscVCommands.FeedBatch)
 	commands.GET("/draft", creator, api.RiscVCommands.Draft)
 	commands.POST("", creator, api.RiscVCommands.Create)
 	commands.PUT("/:id/publish", creator, api.RiscVCommands.Publish)

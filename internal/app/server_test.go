@@ -54,6 +54,14 @@ func (fake *applicationRepository) GetVisible(_ context.Context, minimum int, ma
 	return result, nil
 }
 
+func (fake *applicationRepository) GetFirstVisible(ctx context.Context) (domain.RiscVCommand, error) {
+	visible, _ := fake.GetVisible(ctx, 0, 3)
+	if len(visible) == 0 {
+		return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
+	}
+	return visible[0], nil
+}
+
 func (fake *applicationRepository) GetNextVisible(_ context.Context, id int64) (domain.RiscVCommand, error) {
 	visible, _ := fake.GetVisible(context.Background(), 0, 3)
 	for index, command := range visible {

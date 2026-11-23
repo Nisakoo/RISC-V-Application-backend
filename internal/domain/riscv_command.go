@@ -38,3 +38,19 @@ type PublishRiscVCommandDraft struct {
 	OperandCount int    `json:"operand_count"`
 	LengthBits   int    `json:"length_bits"`
 }
+
+// FeedBatch описывает порцию ленты сессии: случайный набор команд, сохранённый в Redis.
+// Порядковые номера продолжаются от порции к порции в пределах одной сессии.
+type FeedBatch struct {
+	SessionID     string  `json:"session_id"`
+	BatchNumber   int     `json:"batch_number"`
+	FirstPosition int     `json:"first_position"`
+	IDs           []int64 `json:"ids"`
+}
+
+// FeedBatchItem — команда порции ленты с порядковым номером в сессии и признаком лайка пользователя
+type FeedBatchItem struct {
+	Command  RiscVCommand
+	Position int
+	Liked    bool
+}

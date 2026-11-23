@@ -25,6 +25,7 @@ type RiscVCommandRepository interface {
 	GetByID(ctx context.Context, id int64) (domain.RiscVCommand, error)
 	GetDraftByCreatorID(ctx context.Context, creatorID int64) (domain.RiscVCommand, error)
 	GetVisible(ctx context.Context, minimumOperandCount int, maximumOperandCount int) ([]domain.RiscVCommand, error)
+	GetFirstVisible(ctx context.Context) (domain.RiscVCommand, error)
 	GetNextVisible(ctx context.Context, id int64) (domain.RiscVCommand, error)
 	CreateDraft(ctx context.Context, creatorID int64, input domain.CreateRiscVCommandDraft) (domain.RiscVCommand, error)
 	PublishDraft(ctx context.Context, id int64, creatorID int64, input domain.PublishRiscVCommandDraft) (domain.RiscVCommand, error)
@@ -44,14 +45,13 @@ func (service *RiscVCommandService) GetFeedRiscVCommand(ctx context.Context, id 
 	var err error
 
 	if id == nil {
-		commands, repositoryError := service.repository.GetVisible(ctx, 0, 3)
-		if repositoryError != nil {
-			return domain.RiscVCommand{}, domain.RiscVCommand{}, repositoryError
-		}
-		if len(commands) == 0 {
+		command, err = service.repository.GetFirstVisible(ctx)
+		if errors.Is(err, repository.ErrRiscVCommandNotFound) {
 			return domain.RiscVCommand{}, domain.RiscVCommand{}, ErrRiscVCommandNotFound
 		}
-		command = commands[0]
+		if err != nil {
+			return domain.RiscVCommand{}, domain.RiscVCommand{}, err
+		}
 	} else {
 		command, err = service.repository.GetByID(ctx, *id)
 		if err != nil {

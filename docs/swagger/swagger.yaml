@@ -79,6 +79,22 @@ definitions:
       video_url:
         type: string
     type: object
+  handler.apiCommandPage:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/handler.apiListCommand'
+        type: array
+      limit:
+        example: 12
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total:
+        example: 100006
+        type: integer
+    type: object
   handler.apiCredentials:
     properties:
       login:
@@ -92,6 +108,58 @@ definitions:
     properties:
       message:
         example: Команда RISC-V не найдена.
+        type: string
+    type: object
+  handler.apiFeedBatch:
+    properties:
+      batch_number:
+        example: 1
+        type: integer
+      first_position:
+        example: 1
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/handler.apiFeedBatchItem'
+        type: array
+      session_id:
+        example: 0f8fad5bd9cb469fa16570867728950e
+        type: string
+    type: object
+  handler.apiFeedBatchItem:
+    properties:
+      created_at:
+        type: string
+      creator_login:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image_key:
+        type: string
+      image_url:
+        type: string
+      is_liked:
+        type: integer
+      length_bits:
+        type: integer
+      like_count:
+        type: integer
+      mnemonic:
+        type: string
+      operand_count:
+        type: integer
+      position:
+        example: 1
+        type: integer
+      published_at:
+        type: string
+      status:
+        $ref: '#/definitions/domain.RiscVCommandStatus'
+      video_key:
+        type: string
+      video_url:
         type: string
     type: object
   handler.apiFeedCommand:
@@ -198,9 +266,9 @@ info:
 paths:
   /api/riscv_commands:
     get:
-      description: Возвращает опубликованные команды с фильтрацией по количеству операндов.
-        Доступен гостю; для аутентифицированного пользователя is_creator = 1 у его
-        команд.
+      description: Возвращает страницу опубликованных команд с фильтрацией по количеству
+        операндов и общим количеством команд фильтра. Доступен гостю; для аутентифицированного
+        пользователя is_creator = 1 у его команд.
       parameters:
       - description: Минимальное количество операндов
         in: query
@@ -214,15 +282,26 @@ paths:
         minimum: 0
         name: max_operands
         type: integer
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 12
+        description: Размер страницы
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/handler.apiListCommand'
-            type: array
+            $ref: '#/definitions/handler.apiCommandPage'
         "400":
           description: Bad Request
           schema:
@@ -233,7 +312,7 @@ paths:
             $ref: '#/definitions/handler.apiErrorResponse'
       security:
       - BearerAuth: []
-      summary: Список опубликованных команд RISC-V
+      summary: Страница опубликованных команд RISC-V
       tags:
       - riscv_commands
     post:
@@ -501,6 +580,50 @@ paths:
       security:
       - BearerAuth: []
       summary: Лента опубликованных команд RISC-V
+      tags:
+      - riscv_commands
+  /api/riscv_commands/feed/batch:
+    get:
+      description: Возвращает до 100 случайных неповторяющихся опубликованных команд
+        с порядковыми номерами в сессии. Без session_id создаётся новая сессия. refresh=true
+        формирует следующую порцию после просмотра текущей; номера продолжаются. Порция
+        хранится в Redis 30 минут. Доступна гостю; is_liked = 1, если аутентифицированный
+        пользователь поставил лайк.
+      parameters:
+      - description: Идентификатор сессии ленты из предыдущего ответа
+        in: query
+        name: session_id
+        type: string
+      - description: Сформировать новую порцию
+        in: query
+        name: refresh
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.apiFeedBatch'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/handler.apiErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Порция ленты сессии из Redis
       tags:
       - riscv_commands
   /api/users:

@@ -6,7 +6,7 @@ COMPOSE_ENV := docker/.env
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install infra-up infra-down migrate-up migrate-down run swagger format test test-backend test-media
+.PHONY: help install infra-up infra-down migrate-up migrate-down run swagger seed seed-clean format test test-backend test-media
 
 help:
 	@echo "Доступные команды:"
@@ -16,6 +16,8 @@ help:
 	@echo "  make migrate-up     Применить миграции PostgreSQL"
 	@echo "  make migrate-down   Откатить последнюю миграцию PostgreSQL"
 	@echo "  make run            Запустить веб-сервис на :8080"
+	@echo "  make seed           Добавить 100000 команд RISC-V для демонстрации пагинации и индексов"
+	@echo "  make seed-clean     Удалить команды, добавленные make seed"
 	@echo "  make swagger        Сгенерировать спецификацию Swagger"
 	@echo "  make format         Отформатировать Go-код"
 	@echo "  make test-backend   Проверить форматирование, go vet и Go-тесты"
@@ -41,6 +43,14 @@ migrate-down: infra-up
 
 run: migrate-up
 	set -a; . $(COMPOSE_ENV); set +a; go run ./cmd/api
+
+SEED_COUNT ?= 100000
+
+seed: migrate-up
+	set -a; . $(COMPOSE_ENV); set +a; go run ./cmd/seed -count $(SEED_COUNT)
+
+seed-clean: migrate-up
+	set -a; . $(COMPOSE_ENV); set +a; go run ./cmd/seed -clean
 
 swagger:
 	go run github.com/swaggo/swag/cmd/swag@v1.16.4 init -g cmd/api/main.go -o docs/swagger --parseInternal --outputTypes go,json,yaml

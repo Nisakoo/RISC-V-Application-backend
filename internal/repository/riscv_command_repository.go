@@ -90,6 +90,99 @@ func (repository *RiscVCommandRepository) GetVisible(ctx context.Context, minimu
 	return recordsToDomain(records), nil
 }
 
+// GetFirstVisible возвращает первую опубликованную команду ленты без загрузки всего каталога
+func (repository *RiscVCommandRepository) GetFirstVisible(ctx context.Context) (domain.RiscVCommand, error) {
+	var record riscvCommandRecord
+	result := repository.withLikes(ctx).
+		Where("riscv_commands.status = ?", domain.RiscVCommandPublished).
+		Order("riscv_commands.id").
+		Take(&record)
+	if result.Error != nil {
+		return domain.RiscVCommand{}, mapNotFound(result.Error)
+	}
+	return record.toDomain(), nil
+}
+
+// GetVisiblePage возвращает страницу опубликованных команд и общее количество команд фильтра.
+// Страница выбирается по идентификаторам в подзапросе, чтобы агрегация лайков выполнялась только
+// для limit строк, а не для всего каталога.
+func (repository *RiscVCommandRepository) GetVisiblePage(ctx context.Context, minimumOperandCount, maximumOperandCount, limit, offset int) ([]domain.RiscVCommand, int64, error) {
+	filter := func(query *gorm.DB) *gorm.DB {
+		return query.
+			Where("riscv_commands.status = ?", domain.RiscVCommandPublished).
+			Where("riscv_commands.operand_count BETWEEN ? AND ?", minimumOperandCount, maximumOperandCount)
+	}
+
+	var total int64
+	if err := filter(repository.db.WithContext(ctx).Model(&riscvCommandRecord{})).Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf("подсчёт команд RISC-V: %w", err)
+	}
+
+	pageIDs := filter(repository.db.WithContext(ctx).Model(&riscvCommandRecord{})).
+		Select("riscv_commands.id").
+		Order("riscv_commands.id").
+		Limit(limit).
+		Offset(offset)
+
+	var records []riscvCommandRecord
+	result := repository.withLikes(ctx).
+		Where("riscv_commands.id IN (?)", pageIDs).
+		Order("riscv_commands.id").
+		Find(&records)
+	if result.Error != nil {
+		return nil, 0, fmt.Errorf("получение страницы команд RISC-V: %w", result.Error)
+	}
+	return recordsToDomain(records), total, nil
+}
+
+// RandomVisibleIDs возвращает limit случайных неповторяющихся идентификаторов опубликованных команд
+func (repository *RiscVCommandRepository) RandomVisibleIDs(ctx context.Context, limit int) ([]int64, error) {
+	var ids []int64
+	err := repository.db.WithContext(ctx).Raw(
+		"SELECT id FROM riscv_commands WHERE status = ? ORDER BY random() LIMIT ?",
+		domain.RiscVCommandPublished, limit,
+	).Scan(&ids).Error
+	if err != nil {
+		return nil, fmt.Errorf("случайные команды RISC-V для ленты: %w", err)
+	}
+	return ids, nil
+}
+
+// GetVisibleByIDs возвращает опубликованные команды из списка идентификаторов (порядок не гарантируется)
+func (repository *RiscVCommandRepository) GetVisibleByIDs(ctx context.Context, ids []int64) ([]domain.RiscVCommand, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	var records []riscvCommandRecord
+	result := repository.withLikes(ctx).
+		Where("riscv_commands.status = ? AND riscv_commands.id IN ?", domain.RiscVCommandPublished, ids).
+		Find(&records)
+	if result.Error != nil {
+		return nil, fmt.Errorf("получение команд RISC-V по идентификаторам: %w", result.Error)
+	}
+	return recordsToDomain(records), nil
+}
+
+// LikedIDs возвращает множество команд из списка, которым пользователь поставил лайк
+func (repository *RiscVCommandRepository) LikedIDs(ctx context.Context, userID int64, ids []int64) (map[int64]bool, error) {
+	liked := make(map[int64]bool)
+	if userID <= 0 || len(ids) == 0 {
+		return liked, nil
+	}
+	var found []int64
+	err := repository.db.WithContext(ctx).Raw(
+		"SELECT riscv_command_id FROM riscv_command_likes WHERE user_id = ? AND riscv_command_id IN ?",
+		userID, ids,
+	).Scan(&found).Error
+	if err != nil {
+		return nil, fmt.Errorf("лайки команд RISC-V: %w", err)
+	}
+	for _, id := range found {
+		liked[id] = true
+	}
+	return liked, nil
+}
+
 func (repository *RiscVCommandRepository) GetNextVisible(ctx context.Context, id int64) (domain.RiscVCommand, error) {
 	current, err := repository.GetByID(ctx, id)
 	if err != nil {

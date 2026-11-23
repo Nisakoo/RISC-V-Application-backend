@@ -64,6 +64,35 @@ func TestRiscVCommandRepositoryQueriesPostgreSQL(t *testing.T) {
 	if next.ID != -2001 {
 		t.Fatalf("после TESTU1 получен ID %d, ожидался -2001", next.ID)
 	}
+
+	// Тестовые команды имеют отрицательные идентификаторы, поэтому идут первыми на страницах
+	secondPage, total, err := repository.GetVisiblePage(ctx, 2, 2, 1, 1)
+	if err != nil || total < 2 || len(secondPage) != 1 || secondPage[0].ID != -2001 {
+		t.Fatalf("вторая страница %+v, всего %d, ошибка %v", secondPage, total, err)
+	}
+	first, err := repository.GetFirstVisible(ctx)
+	if err != nil || first.ID != -2002 {
+		t.Fatalf("первая команда ленты %+v, ошибка %v", first, err)
+	}
+	randomIDs, err := repository.RandomVisibleIDs(ctx, 100)
+	if err != nil || len(randomIDs) == 0 || len(randomIDs) > 100 {
+		t.Fatalf("случайные идентификаторы %v, ошибка %v", randomIDs, err)
+	}
+	seen := map[int64]bool{}
+	for _, id := range randomIDs {
+		if seen[id] {
+			t.Fatalf("идентификатор %d повторяется в порции", id)
+		}
+		seen[id] = true
+	}
+	byIDs, err := repository.GetVisibleByIDs(ctx, []int64{-2002, -2001})
+	if err != nil || len(byIDs) != 2 {
+		t.Fatalf("команды по идентификаторам %+v, ошибка %v", byIDs, err)
+	}
+	liked, err := repository.LikedIDs(ctx, creatorID, []int64{-2002, -2001})
+	if err != nil || !liked[-2002] || liked[-2001] {
+		t.Fatalf("лайки %v, ошибка %v", liked, err)
+	}
 }
 
 func hasCommandID(commands []domain.RiscVCommand, expectedID int64) bool {

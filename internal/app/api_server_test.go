@@ -61,6 +61,58 @@ func (fake *apiApplicationRepository) IsLiked(_ context.Context, id, userID int6
 	return fake.liked[likeKey{userID, id}], nil
 }
 
+func (fake *apiApplicationRepository) GetVisiblePage(ctx context.Context, minimum, maximum, limit, offset int) ([]domain.RiscVCommand, int64, error) {
+	visible, _ := fake.GetVisible(ctx, minimum, maximum)
+	total := int64(len(visible))
+	if offset >= len(visible) {
+		return nil, total, nil
+	}
+	return visible[offset:min(offset+limit, len(visible))], total, nil
+}
+
+func (fake *apiApplicationRepository) RandomVisibleIDs(ctx context.Context, limit int) ([]int64, error) {
+	visible, _ := fake.GetVisible(ctx, 0, 3)
+	ids := make([]int64, 0, len(visible))
+	for _, command := range visible {
+		ids = append(ids, command.ID)
+	}
+	return ids[:min(limit, len(ids))], nil
+}
+
+func (fake *apiApplicationRepository) GetVisibleByIDs(ctx context.Context, ids []int64) ([]domain.RiscVCommand, error) {
+	visible, _ := fake.GetVisible(ctx, 0, 3)
+	result := make([]domain.RiscVCommand, 0, len(ids))
+	for _, command := range visible {
+		for _, id := range ids {
+			if command.ID == id {
+				result = append(result, command)
+			}
+		}
+	}
+	return result, nil
+}
+
+func (fake *apiApplicationRepository) LikedIDs(_ context.Context, userID int64, ids []int64) (map[int64]bool, error) {
+	liked := map[int64]bool{}
+	for _, id := range ids {
+		liked[id] = fake.liked[likeKey{userID, id}]
+	}
+	return liked, nil
+}
+
+// memoryFeedStore хранит порции лент в памяти для тестов без Redis
+type memoryFeedStore map[string]domain.FeedBatch
+
+func (store memoryFeedStore) Load(_ context.Context, sessionID string) (domain.FeedBatch, bool, error) {
+	batch, found := store[sessionID]
+	return batch, found, nil
+}
+
+func (store memoryFeedStore) Save(_ context.Context, batch domain.FeedBatch, _ time.Duration) error {
+	store[batch.SessionID] = batch
+	return nil
+}
+
 func (fake *apiApplicationRepository) RegisterUser(_ context.Context, login, passwordHash string) (int64, error) {
 	if _, exists := fake.users[login]; exists {
 		return 0, repository.ErrLoginAlreadyExists
@@ -119,7 +171,7 @@ func newAPITestServer(t *testing.T) *Server {
 	media := apiApplicationMedia{}
 	userService := service.NewUserService(fake, memoryBlacklist{}, []byte(strings.Repeat("k", 32)), time.Hour)
 	return NewServer(":0", handler.NewRiscVCommandHandler(service.NewRiscVCommandService(fake), media), &API{
-		RiscVCommands: handler.NewRiscVAPIHandler(service.NewRiscVAPIService(fake), media),
+		RiscVCommands: handler.NewRiscVAPIHandler(service.NewRiscVAPIService(fake).WithFeedStore(memoryFeedStore{}), media),
 		Users:         handler.NewUserAPIHandler(userService),
 		Tokens:        userService,
 	})
@@ -149,7 +201,8 @@ func authenticate(t *testing.T, server *Server, login string) string {
 	return result.AccessToken
 }
 
-func TestLabFourHasTenAPIMethods(t *testing.T) {
+// TestAPIMethods проверяет набор методов: десять методов ЛР4 и порция ленты из Redis (дополнительное задание)
+func TestAPIMethods(t *testing.T) {
 	server := newAPITestServer(t)
 	actual := make([]string, 0)
 	for _, route := range server.router.Routes() {
@@ -163,6 +216,7 @@ func TestLabFourHasTenAPIMethods(t *testing.T) {
 		"GET /api/riscv_commands",
 		"GET /api/riscv_commands/draft",
 		"GET /api/riscv_commands/feed",
+		"GET /api/riscv_commands/feed/batch",
 		"POST /api/riscv_commands",
 		"POST /api/riscv_commands/:id/like",
 		"POST /api/users",
@@ -207,7 +261,6 @@ func TestLabFourAPIReturnsDataWithoutStatusWrapper(t *testing.T) {
 		status             int
 		prefix, contains   string
 	}{
-		{http.MethodGet, "/api/riscv_commands", "", 200, `[{`, `"is_creator":1`},
 		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"is_liked":0,"next_id":2`},
 		{http.MethodPost, "/api/riscv_commands/1/like", `{"like":1}`, 200, `{"like":1`, `"like_count":1`},
 		{http.MethodGet, "/api/riscv_commands/feed?id=1", "", 200, `{"id":1`, `"is_liked":1,"next_id":2`},
@@ -222,6 +275,60 @@ func TestLabFourAPIReturnsDataWithoutStatusWrapper(t *testing.T) {
 		}
 		if test.status == http.StatusNoContent && body != "" {
 			t.Errorf("%s %s: ответ 204 должен быть без тела, получено %s", test.method, test.path, body)
+		}
+	}
+}
+
+func TestAPIListIsPaginated(t *testing.T) {
+	server := newAPITestServer(t)
+	response := serve(server, http.MethodGet, "/api/riscv_commands?page=2&limit=1", "", "")
+	var page struct {
+		Total int64 `json:"total"`
+		Page  int   `json:"page"`
+		Limit int   `json:"limit"`
+		Data  []struct {
+			ID int64 `json:"id"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &page); err != nil || response.Code != http.StatusOK ||
+		page.Total != 2 || page.Page != 2 || page.Limit != 1 || len(page.Data) != 1 || page.Data[0].ID != 2 {
+		t.Fatalf("страница списка: код %d, тело %s", response.Code, response.Body.String())
+	}
+	for _, query := range []string{"page=0", "limit=0", "limit=101", "page=abc"} {
+		if response := serve(server, http.MethodGet, "/api/riscv_commands?"+query, "", ""); response.Code != http.StatusBadRequest {
+			t.Errorf("параметр %s принят: код %d", query, response.Code)
+		}
+	}
+}
+
+type feedBatchResponse struct {
+	SessionID     string `json:"session_id"`
+	BatchNumber   int    `json:"batch_number"`
+	FirstPosition int    `json:"first_position"`
+	Items         []struct {
+		Position int `json:"position"`
+	} `json:"items"`
+}
+
+func TestAPIFeedBatchKeepsSessionAndNumbering(t *testing.T) {
+	server := newAPITestServer(t)
+	read := func(path string) (int, feedBatchResponse) {
+		response := serve(server, http.MethodGet, path, "", "")
+		var result feedBatchResponse
+		_ = json.Unmarshal(response.Body.Bytes(), &result)
+		return response.Code, result
+	}
+	code, first := read("/api/riscv_commands/feed/batch")
+	if code != http.StatusOK || first.SessionID == "" || first.BatchNumber != 1 || len(first.Items) != 2 || first.Items[0].Position != 1 {
+		t.Fatalf("первая порция: код %d, %+v", code, first)
+	}
+	code, second := read("/api/riscv_commands/feed/batch?refresh=true&session_id=" + first.SessionID)
+	if code != http.StatusOK || second.SessionID != first.SessionID || second.BatchNumber != 2 || second.FirstPosition != 3 || second.Items[0].Position != 3 {
+		t.Fatalf("вторая порция: код %d, %+v", code, second)
+	}
+	for _, query := range []string{"session_id=bad", "refresh=maybe"} {
+		if code, _ := read("/api/riscv_commands/feed/batch?" + query); code != http.StatusBadRequest {
+			t.Errorf("запрос %s принят: код %d", query, code)
 		}
 	}
 }
@@ -271,14 +378,16 @@ func TestLabFourCreatorComesFromToken(t *testing.T) {
 	server := newAPITestServer(t)
 	token := authenticate(t, server, "pipeline_author")
 	response := serve(server, http.MethodGet, "/api/riscv_commands", "", token)
-	var commands []struct {
-		ID        int64 `json:"id"`
-		IsCreator int   `json:"is_creator"`
+	var page struct {
+		Data []struct {
+			ID        int64 `json:"id"`
+			IsCreator int   `json:"is_creator"`
+		} `json:"data"`
 	}
-	if err := json.Unmarshal(response.Body.Bytes(), &commands); err != nil {
+	if err := json.Unmarshal(response.Body.Bytes(), &page); err != nil {
 		t.Fatal(err)
 	}
-	for _, command := range commands {
+	for _, command := range page.Data {
 		if (command.ID == 2) != (command.IsCreator == 1) {
 			t.Errorf("признак is_creator команды %d для pipeline_author: %d", command.ID, command.IsCreator)
 		}

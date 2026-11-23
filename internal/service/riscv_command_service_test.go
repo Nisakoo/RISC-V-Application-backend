@@ -42,6 +42,14 @@ func (fake *fakeRiscVCommandRepository) GetVisible(_ context.Context, minimum in
 	return commands, nil
 }
 
+func (fake *fakeRiscVCommandRepository) GetFirstVisible(ctx context.Context) (domain.RiscVCommand, error) {
+	visible, _ := fake.GetVisible(ctx, 0, 3)
+	if len(visible) == 0 {
+		return domain.RiscVCommand{}, repository.ErrRiscVCommandNotFound
+	}
+	return visible[0], nil
+}
+
 func (fake *fakeRiscVCommandRepository) GetNextVisible(_ context.Context, id int64) (domain.RiscVCommand, error) {
 	for index, command := range fake.commands {
 		if command.ID == id {

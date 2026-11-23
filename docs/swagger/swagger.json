@@ -18,14 +18,14 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Возвращает опубликованные команды с фильтрацией по количеству операндов. Доступен гостю; для аутентифицированного пользователя is_creator = 1 у его команд.",
+                "description": "Возвращает страницу опубликованных команд с фильтрацией по количеству операндов и общим количеством команд фильтра. Доступен гостю; для аутентифицированного пользователя is_creator = 1 у его команд.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "riscv_commands"
                 ],
-                "summary": "Список опубликованных команд RISC-V",
+                "summary": "Страница опубликованных команд RISC-V",
                 "parameters": [
                     {
                         "maximum": 3,
@@ -42,16 +42,30 @@
                         "description": "Максимальное количество операндов",
                         "name": "max_operands",
                         "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 12,
+                        "description": "Размер страницы",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/handler.apiListCommand"
-                            }
+                            "$ref": "#/definitions/handler.apiCommandPage"
                         }
                     },
                     "400": {
@@ -249,6 +263,69 @@
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.apiErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/riscv_commands/feed/batch": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает до 100 случайных неповторяющихся опубликованных команд с порядковыми номерами в сессии. Без session_id создаётся новая сессия. refresh=true формирует следующую порцию после просмотра текущей; номера продолжаются. Порция хранится в Redis 30 минут. Доступна гостю; is_liked = 1, если аутентифицированный пользователь поставил лайк.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "riscv_commands"
+                ],
+                "summary": "Порция ленты сессии из Redis",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор сессии ленты из предыдущего ответа",
+                        "name": "session_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Сформировать новую порцию",
+                        "name": "refresh",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.apiFeedBatch"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.apiErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.apiErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.apiErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
                         "schema": {
                             "$ref": "#/definitions/handler.apiErrorResponse"
                         }
@@ -729,6 +806,29 @@
                 }
             }
         },
+        "handler.apiCommandPage": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.apiListCommand"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100006
+                }
+            }
+        },
         "handler.apiCredentials": {
             "type": "object",
             "properties": {
@@ -748,6 +848,83 @@
                 "message": {
                     "type": "string",
                     "example": "Команда RISC-V не найдена."
+                }
+            }
+        },
+        "handler.apiFeedBatch": {
+            "type": "object",
+            "properties": {
+                "batch_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "first_position": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.apiFeedBatchItem"
+                    }
+                },
+                "session_id": {
+                    "type": "string",
+                    "example": "0f8fad5bd9cb469fa16570867728950e"
+                }
+            }
+        },
+        "handler.apiFeedBatchItem": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_login": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_key": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "is_liked": {
+                    "type": "integer"
+                },
+                "length_bits": {
+                    "type": "integer"
+                },
+                "like_count": {
+                    "type": "integer"
+                },
+                "mnemonic": {
+                    "type": "string"
+                },
+                "operand_count": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.RiscVCommandStatus"
+                },
+                "video_key": {
+                    "type": "string"
+                },
+                "video_url": {
+                    "type": "string"
                 }
             }
         },
