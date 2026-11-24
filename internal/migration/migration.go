@@ -17,6 +17,7 @@ var versions = []string{
 	"005_command_fields",
 	"006_required_media_keys",
 	"007_description_en",
+	"008_more_commands",
 }
 
 //go:embed sql/*.sql
